@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class BoostManager {
     private final ContinuityBoost plugin;
@@ -18,14 +19,13 @@ public class BoostManager {
     private final Set<Boost> boosts = new HashSet<>();
     @NotNull
     private final Map<Boost, Long> currentBoosts = new HashMap<>();
-    private static boolean saved = false;
 
     public BoostManager(final ContinuityBoost plugin) {
         this.plugin = plugin;
     }
 
     public void runTask() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+/*        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             boolean save = false;
             for (Boost boost : boosts) {
                 boolean found = false;
@@ -51,9 +51,8 @@ public class BoostManager {
             if (save) {
                 Bukkit.getScheduler().runTask(plugin, this::forceSave);
             }
-        }, 20L, 20L);
+        }, 20L, 20L);*/
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            saved = false;
             final long time = System.currentTimeMillis();
             for (Boost boost : new HashSet<>(currentBoosts.keySet())) {
                 final long difference = (time - currentBoosts.get(boost)) / 1000;
@@ -65,11 +64,7 @@ public class BoostManager {
     }
 
     public void forceSave() {
-        if (!saved) {
-            plugin.getBoostsFile().save();
-            return;
-        }
-        saved = false;
+        plugin.getBoostsFile().save();
     }
 
     public @NotNull Set<Boost> getBoosts() {
@@ -89,9 +84,12 @@ public class BoostManager {
     }
 
     public void removeBoost(Boost boost) {
-        plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
         boosts.remove(boost);
         currentBoosts.remove(boost);
+        if (plugin.getBoostsFile().getConfig().getConfigurationSection(boost.getUniqueId().toString()) == null) {
+            throw new IllegalArgumentException("The configuration section " + boost.getUniqueId().toString() + " doesn't exist!");
+        }
+        plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
         forceSave();
     }
 
@@ -167,6 +165,8 @@ public class BoostManager {
         }
         if (!similar) {
             boosts.add(boost);
+            saveConfigurationFile(boost, plugin.getBoostsFile().getConfig().createSection(boost.getUniqueId().toString()));
+            forceSave();
         }
     }
 

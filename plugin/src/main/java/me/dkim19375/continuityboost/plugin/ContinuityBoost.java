@@ -3,6 +3,7 @@ package me.dkim19375.continuityboost.plugin;
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
 import me.dkim19375.continuityboost.plugin.listeners.BlockBreakListener;
+import me.dkim19375.continuityboost.plugin.listeners.InventoryClickListener;
 import me.dkim19375.continuityboost.plugin.listeners.PlayerExpChangeListener;
 import me.dkim19375.continuityboost.plugin.listeners.PlayerInteractListener;
 import me.dkim19375.continuityboost.plugin.util.Boost;
@@ -14,8 +15,10 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class ContinuityBoost extends CoreJavaPlugin {
     private final BoostManager boostManager = new BoostManager(this);
@@ -44,7 +47,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         super.reloadConfig();
         boostsFile.createConfig();
         boostsFile.reload();
-        for (String key : boostsFile.getConfig().getKeys(false)) {
+        for (String key : new HashSet<>(boostsFile.getConfig().getKeys(false))) {
             final ConfigurationSection section = boostsFile.getConfig().getConfigurationSection(key);
             if (section == null) {
                 continue;
@@ -55,7 +58,14 @@ public class ContinuityBoost extends CoreJavaPlugin {
             } catch (Exception ignored) {
                 continue;
             }
+            System.out.println("added");
             boostManager.addBoost(boost);
+        }
+
+        for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
+            if (boostsFile.getConfig().getConfigurationSection(boost.getUniqueId().toString()) == null) {
+                boostManager.getBoosts().remove(boost);
+            }
         }
     }
 
@@ -74,6 +84,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerExpChangeListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
     }
 
     public BoostManager getBoostManager() {
