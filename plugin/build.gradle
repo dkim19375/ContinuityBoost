@@ -1,0 +1,14 @@
+repositories {
+    maven { url = 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.dkim19375:dkim19375Core:2.3.4'
+    implementation project(':api')
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        expand 'pluginVersion': version
+    }
+}

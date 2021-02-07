@@ -1,0 +1,24 @@
+main: me.dkim19375.continuityboost.plugin.ContinuityBoost
+name: ContinuityBoost
+version: ${pluginVersion}
+description: Have global boosts with items!
+author: dkim19375
+depend: [  ]
+api-version: 1.13
+
+commands:
+  continuityboost:
+    description: Main command
+    aliases:
+      - boost
+      - cboost
+
+permissions:
+  continuityboost.all:
+    description: All permissions
+    children:
+      - continuityboost.currentboosts
+      - continuityboost.boosts
+      - continuityboost.reload
+      - continuityboost.stop.all
+      - continuityboost.stop.type
