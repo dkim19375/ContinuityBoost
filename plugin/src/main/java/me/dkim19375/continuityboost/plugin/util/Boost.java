@@ -1,17 +1,16 @@
 package me.dkim19375.continuityboost.plugin.util;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
-public class Boost implements Cloneable {
+public class Boost implements Cloneable, ConfigurationSerializable {
     private int duration;
     @NotNull
     private BoostType type;
@@ -23,6 +22,10 @@ public class Boost implements Cloneable {
     @NotNull
     private String boostMessage;
     private final UUID uuid;
+
+    static {
+        ConfigurationSerialization.registerClass(Boost.class);
+    }
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
@@ -59,31 +62,25 @@ public class Boost implements Cloneable {
 
     @SuppressWarnings("unused")
     public Boost(ConfigurationSection section) {
-        duration = section.getInt("duration");
-        type = Objects.requireNonNull(BoostType.match(section.getString("type")));
-        String effectString = section.getString("effect");
-        int effectDuration = section.getInt("duration");
-        int effectAmplifier = section.getInt("amplifier") - 1;
-        if (effectString != null) {
-            final PotionEffectType type = PotionEffectType.getByName(effectString);
-            if (type != null) {
-                effect = new PotionEffect(type, effectDuration, effectAmplifier);
-            }
-        }
-        boostingItem = Objects.requireNonNull(section.getItemStack("item"));
-        multiplier = section.getInt("multiplier");
-        final String boostMsg = section.getString("boost-message");
-        boostMessage = boostMsg == null ? "The server has been boosted!" : boostMsg;
-        final UUID uuid1;
-        try {
-            uuid1 = UUID.fromString(Objects.requireNonNull(section.getString("uuid")));
-        } catch (Exception e) {
-            final UUID u = UUID.randomUUID();
-            section.set("uuid", u.toString());
-            uuid = u;
-            return;
-        }
-        uuid = uuid1;
+        Map<String, Object> map = Objects.requireNonNull(Objects.requireNonNull(section.getParent()).getSerializable(section.getParent().getName(), Boost.class)).serialize();
+        duration = (int) map.get("duration");
+        type = (BoostType) map.get("type");
+        effect = (PotionEffect) map.get("effect");
+        boostingItem = (ItemStack) map.get("item");
+        multiplier = (int) map.get("multiplier");
+        boostMessage = (String) map.get("boost-message");
+        uuid = UUID.fromString((String) map.get("uuid"));
+    }
+
+    public static Boost deserialize(@NotNull Map<String, Object> map) {
+        final int duration = (int) map.get("duration");
+        final BoostType type = (BoostType) map.get("type");
+        final PotionEffect effect = (PotionEffect) map.get("effect");
+        final ItemStack boostingItem = (ItemStack) map.get("item");
+        final int multiplier = (int) map.get("multiplier");
+        final String boostMessage = (String) map.get("boost-message");
+        final UUID uuid = UUID.fromString((String) map.get("uuid"));
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid);
     }
 
     public int getDuration() {
@@ -155,9 +152,27 @@ public class Boost implements Cloneable {
         return uuid;
     }
 
+    @NotNull
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("duration", duration);
+        map.put("type", type);
+        map.put("effect", effect);
+        map.put("item", boostingItem);
+        map.put("multiplier", multiplier);
+        map.put("boost-message", boostMessage);
+        map.put("uuid", uuid.toString());
+        return map;
+    }
+
     @SuppressWarnings("unused")
-    public enum BoostType {
+    public enum BoostType implements ConfigurationSerializable {
         EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, VILLAGER;
+
+        static {
+            ConfigurationSerialization.registerClass(BoostType.class);
+        }
 
         @Nullable
         public static BoostType match(final String s) {
@@ -176,6 +191,18 @@ public class Boost implements Cloneable {
                 default:
                     return null;
             }
+        }
+
+        @NotNull
+        @Override
+        public Map<String, Object> serialize() {
+            Map<String, Object> map = new HashMap<>();
+            map.put("type", name());
+            return map;
+        }
+
+        public static BoostType deserialize(@NotNull Map<String, Object> map) {
+            return BoostType.match((String) map.get("type"));
         }
     }
 

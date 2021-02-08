@@ -13,12 +13,11 @@ import me.dkim19375.dkim19375core.ConfigFile;
 import me.dkim19375.dkim19375core.CoreJavaPlugin;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.logging.Level;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class ContinuityBoost extends CoreJavaPlugin {
     private final BoostManager boostManager = new BoostManager(this);
@@ -52,18 +51,16 @@ public class ContinuityBoost extends CoreJavaPlugin {
             if (section == null) {
                 continue;
             }
-            final Boost boost;
-            try {
-                boost = new Boost(section);
-            } catch (Exception ignored) {
+            final Boost boost = boostsFile.getConfig().getSerializable(key, Boost.class);
+            if (boost != null) {
+                boostManager.addBoost(boost);
                 continue;
             }
-            System.out.println("added");
-            boostManager.addBoost(boost);
+            boostsFile.getConfig().set(key, null);
         }
 
         for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
-            if (boostsFile.getConfig().getConfigurationSection(boost.getUniqueId().toString()) == null) {
+            if (boostsFile.getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
                 boostManager.getBoosts().remove(boost);
             }
         }

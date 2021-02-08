@@ -3,7 +3,9 @@ package me.dkim19375.continuityboost.plugin.util;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -71,23 +73,15 @@ public class BoostManager {
         return boosts;
     }
 
-    public void saveConfigurationFile(final Boost boost, final ConfigurationSection section) {
-        section.set("duration", boost.getDuration());
-        section.set("type", boost.getType().name());
-        section.set("multiplier", boost.getMultiplier());
-        section.set("item", boost.getBoostingItem());
-        section.set("boost-message", boost.getBoostMessage());
-        final PotionEffect effect = boost.getEffect();
-        if (effect != null) {
-            section.set("effect", effect.getType().getName());
-        }
+    public void saveConfigurationFile(final Boost boost) {
+        plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), boost);
     }
 
     public void removeBoost(Boost boost) {
         boosts.remove(boost);
         currentBoosts.remove(boost);
-        if (plugin.getBoostsFile().getConfig().getConfigurationSection(boost.getUniqueId().toString()) == null) {
-            throw new IllegalArgumentException("The configuration section " + boost.getUniqueId().toString() + " doesn't exist!");
+        if (plugin.getBoostsFile().getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
+            throw new IllegalArgumentException("The configuration section " + boost.getUniqueId().toString() + " is invalid!");
         }
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
         forceSave();
@@ -165,7 +159,7 @@ public class BoostManager {
         }
         if (!similar) {
             boosts.add(boost);
-            saveConfigurationFile(boost, plugin.getBoostsFile().getConfig().createSection(boost.getUniqueId().toString()));
+            saveConfigurationFile(boost);
             forceSave();
         }
     }
