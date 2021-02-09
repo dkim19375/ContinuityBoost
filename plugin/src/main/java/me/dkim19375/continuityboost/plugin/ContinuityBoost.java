@@ -2,10 +2,7 @@ package me.dkim19375.continuityboost.plugin;
 
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
-import me.dkim19375.continuityboost.plugin.listeners.BlockBreakListener;
-import me.dkim19375.continuityboost.plugin.listeners.InventoryClickListener;
-import me.dkim19375.continuityboost.plugin.listeners.PlayerExpChangeListener;
-import me.dkim19375.continuityboost.plugin.listeners.PlayerInteractListener;
+import me.dkim19375.continuityboost.plugin.listeners.*;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.continuityboost.plugin.util.BoostManager;
 import me.dkim19375.continuityboost.plugin.util.LoggingUtils;
@@ -16,9 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -33,9 +28,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
     }
 
     @Override
-    public void onDisable() {
-        LoggingUtils.logInfo("Disabled ContinuityBoost!");
-    }
+    public void onDisable() { LoggingUtils.logInfo("Disabled ContinuityBoost!"); }
 
     public void saveConfigs() {
         saveDefaultConfig();
@@ -92,6 +85,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             final Set<String> materials = new HashSet<>();
             for (Material material : Material.values()) {
@@ -101,11 +95,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         });
     }
 
-    public BoostManager getBoostManager() {
-        return boostManager;
-    }
+    public BoostManager getBoostManager() { return boostManager; }
 
-    public ConfigFile getBoostsFile() {
-        return boostsFile;
-    }
+    public ConfigFile getBoostsFile() { return boostsFile; }
 }
