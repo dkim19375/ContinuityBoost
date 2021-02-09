@@ -36,7 +36,6 @@ public class CommandHandler implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         if (args.length < 1) {
             sender.sendMessage(LITTLE_ARGS);
-            showHelp(sender, label);
             return true;
         }
         if (args.length > 2) {
@@ -44,12 +43,10 @@ public class CommandHandler implements CommandExecutor {
                 //noinspection SpellCheckingInspection
                 if (!args[0].equalsIgnoreCase("giveitem")) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args.length > 3) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
             }
@@ -62,7 +59,6 @@ public class CommandHandler implements CommandExecutor {
             case "currentboosts":
                 if (args.length > 1) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 sender.sendMessage(ChatColor.GREEN + "Current boosts:");
@@ -78,7 +74,6 @@ public class CommandHandler implements CommandExecutor {
             case "boosts":
                 if (args.length > 1) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 sender.sendMessage(ChatColor.GREEN + "Boosts:");
@@ -103,7 +98,6 @@ public class CommandHandler implements CommandExecutor {
             case "info":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 try {
@@ -157,7 +151,6 @@ public class CommandHandler implements CommandExecutor {
             case "reload":
                 if (args.length > 1) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 sender.sendMessage(ChatColor.GREEN + "Reloading configs");
@@ -167,7 +160,6 @@ public class CommandHandler implements CommandExecutor {
             case "stop":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args[1].equalsIgnoreCase("all")) {
@@ -191,7 +183,6 @@ public class CommandHandler implements CommandExecutor {
                 final Boost.BoostType boostType = Boost.BoostType.match(args[1]);
                 if (boostType == null) {
                     sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
-                    showHelp(sender, label);
                     return true;
                 }
                 plugin.getBoostManager().forceStopBoost(boostType);
@@ -201,7 +192,6 @@ public class CommandHandler implements CommandExecutor {
             case "remove":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args[1].equalsIgnoreCase("all")) {
@@ -228,7 +218,6 @@ public class CommandHandler implements CommandExecutor {
                 final Boost.BoostType boostTypeRemove = Boost.BoostType.match(args[1]);
                 if (boostTypeRemove == null) {
                     sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
-                    showHelp(sender, label);
                     return true;
                 }
                 int amount = 0;
@@ -245,12 +234,10 @@ public class CommandHandler implements CommandExecutor {
             case "add":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(MUST_BE_PLAYER);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args.length < 5) {
                     sender.sendMessage(LITTLE_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 final Player player = (Player) sender;
@@ -259,13 +246,11 @@ public class CommandHandler implements CommandExecutor {
                     duration = Integer.parseInt(args[1]);
                 } catch (NumberFormatException ignored) {
                     sender.sendMessage(ChatColor.RED + args[1] + " is not a number!");
-                    showHelp(sender, label);
                     return true;
                 }
                 final Boost.BoostType type = Boost.BoostType.match(args[2]);
                 if (type == null) {
                     sender.sendMessage(ChatColor.RED + args[2] + " is not a valid type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
-                    showHelp(sender, label);
                     return true;
                 }
                 final int multiplier;
@@ -273,7 +258,6 @@ public class CommandHandler implements CommandExecutor {
                     multiplier = Integer.parseInt(args[3]);
                 } catch (NumberFormatException ignored) {
                     sender.sendMessage(ChatColor.RED + args[3] + " is not a number!");
-                    showHelp(sender, label);
                     return true;
                 }
                 final PotionEffectType effectType = PotionEffectType.getByName(args[4]);
@@ -344,20 +328,17 @@ public class CommandHandler implements CommandExecutor {
             case "giveitem":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args.length == 2) {
                     if (!(sender instanceof Player)) {
                         sender.sendMessage(MUST_BE_PLAYER);
-                        showHelp(sender, label);
                         return true;
                     }
                     final Player p = (Player) sender;
                     final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[1]);
                     if (boostToGive == null) {
                         p.sendMessage(INVALID_UUID);
-                        showHelp(sender, label);
                         return true;
                     }
                     final boolean dropped = giveItem(p, boostToGive.getBoostingItem());
@@ -369,12 +350,10 @@ public class CommandHandler implements CommandExecutor {
                 final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[2]);
                 if (playerToGive == null) {
                     sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
-                    showHelp(sender, label);
                     return true;
                 }
                 if (boostToGive == null) {
                     sender.sendMessage(INVALID_UUID);
-                    showHelp(sender, label);
                     return true;
                 }
                 final boolean dropped = giveItem(playerToGive, boostToGive.getBoostingItem());
@@ -385,13 +364,11 @@ public class CommandHandler implements CommandExecutor {
             case "toggle":
                 if (args.length > 2) {
                     sender.sendMessage(TOO_MANY_ARGS);
-                    showHelp(sender, label);
                     return true;
                 }
                 if (args.length < 2) {
                     if (!(sender instanceof Player)) {
                         sender.sendMessage(MUST_BE_PLAYER);
-                        showHelp(sender, label);
                         return true;
                     }
                     final Player togglePlayer = (Player) sender;
@@ -405,7 +382,7 @@ public class CommandHandler implements CommandExecutor {
                         }
                         return true;
                     }
-                    sender.sendMessage(ChatColor.GOLD + "You have no toggled off the boosts!");
+                    sender.sendMessage(ChatColor.GOLD + "You have now toggled off the boosts!");
                     for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(Boost.BoostType.EFFECT)) {
                         if (toggleBoost.getEffect() != null) {
                             togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
@@ -416,7 +393,6 @@ public class CommandHandler implements CommandExecutor {
                 final Player togglePlayer = PlayerUtils.getFromAll(args[1]);
                 if (togglePlayer == null) {
                     sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
-                    showHelp(sender, label);
                     return true;
                 }
                 final boolean toggled = plugin.getBoostManager().togglePlayer(togglePlayer.getUniqueId());
@@ -440,7 +416,6 @@ public class CommandHandler implements CommandExecutor {
                 return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid argument!");
-                showHelp(sender, label);
                 return true;
         }
     }
