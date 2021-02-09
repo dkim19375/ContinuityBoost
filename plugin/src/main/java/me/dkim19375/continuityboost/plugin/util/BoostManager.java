@@ -3,9 +3,7 @@ package me.dkim19375.continuityboost.plugin.util;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class BoostManager {
     private final ContinuityBoost plugin;
@@ -27,33 +24,6 @@ public class BoostManager {
     }
 
     public void runTask() {
-/*        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            boolean save = false;
-            for (Boost boost : boosts) {
-                boolean found = false;
-                for (String key : new HashSet<>(plugin.getBoostsFile().getConfig().getKeys(false))) {
-                    final ConfigurationSection section = plugin.getBoostsFile().getConfig().getConfigurationSection(key);
-                    if (section == null) {
-                        continue;
-                    }
-                    if (!isValidConfiguration(section)) {
-                        continue;
-                    }
-                    final Boost b = new Boost(section);
-                    if (boost.equals(b)) {
-                        found = true;
-                    }
-                }
-                if (found) {
-                    continue;
-                }
-                saveConfigurationFile(boost, plugin.getBoostsFile().getConfig().createSection(UUID.randomUUID().toString()));
-                save = true;
-            }
-            if (save) {
-                Bukkit.getScheduler().runTask(plugin, this::forceSave);
-            }
-        }, 20L, 20L);*/
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             final long time = System.currentTimeMillis();
             for (Boost boost : new HashSet<>(currentBoosts.keySet())) {
@@ -81,7 +51,7 @@ public class BoostManager {
         boosts.remove(boost);
         currentBoosts.remove(boost);
         if (plugin.getBoostsFile().getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
-            throw new IllegalArgumentException("The configuration section " + boost.getUniqueId().toString() + " is invalid!");
+            return;
         }
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
         forceSave();
@@ -97,35 +67,20 @@ public class BoostManager {
         return null;
     }
 
-    public boolean isValidConfiguration(ConfigurationSection section) {
-        if (section == null) {
-            return false;
+    @Nullable
+    public Boost getBoostByUUID(String uuid) {
+        final UUID uuid1;
+        try {
+            uuid1 = UUID.fromString(uuid);
+        } catch (IllegalArgumentException e) {
+            return null;
         }
-        if (section.getInt("duration") < 1) {
-            return false;
+        for (Boost boost : boosts) {
+            if (boost.getUniqueId().equals(uuid1)) {
+                return boost;
+            }
         }
-        final Boost.BoostType type = Boost.BoostType.match(section.getString("type"));
-        if (type == null) {
-            return false;
-        }
-        if (section.getInt("multiplier") < 1) {
-            return false;
-        }
-        if (section.getItemStack("item") == null) {
-            return false;
-        }
-        if (section.getString("boost-message") == null) {
-            section.set("boost-message", "The server has been boosted!");
-        }
-        if (type != Boost.BoostType.EFFECT) {
-            return true;
-        }
-        final String stringEffect = section.getString("effect");
-        if (stringEffect == null) {
-            return false;
-        }
-        final PotionEffectType potionEffectType = PotionEffectType.getByName(stringEffect.toUpperCase());
-        return potionEffectType != null;
+        return null;
     }
 
     public void forceStopBoost(final Boost boost) {

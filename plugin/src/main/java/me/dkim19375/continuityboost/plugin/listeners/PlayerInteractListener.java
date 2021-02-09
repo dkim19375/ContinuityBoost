@@ -39,6 +39,9 @@ public class PlayerInteractListener implements Listener {
         if (boost == null) {
             return;
         }
+        if (plugin.getConfig().getBoolean("remove-item")) {
+            e.getPlayer().getInventory().remove(clickedItem);
+        }
         plugin.getBoostManager().startBoost(boost);
     }
 

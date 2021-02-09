@@ -12,8 +12,6 @@ import me.dkim19375.continuityboost.plugin.util.LoggingUtils;
 import me.dkim19375.dkim19375core.ConfigFile;
 import me.dkim19375.dkim19375core.CoreJavaPlugin;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.util.HashSet;
@@ -21,12 +19,12 @@ import java.util.logging.Level;
 
 public class ContinuityBoost extends CoreJavaPlugin {
     private final BoostManager boostManager = new BoostManager(this);
-    private final ConfigFile boostsFile = new ConfigFile(this, "boosts.yml");
+    private ConfigFile boostsFile;
 
     @Override
     public void onEnable() {
-        saveConfigs();
         register();
+        saveConfigs();
     }
 
     @Override
@@ -47,16 +45,13 @@ public class ContinuityBoost extends CoreJavaPlugin {
         boostsFile.createConfig();
         boostsFile.reload();
         for (String key : new HashSet<>(boostsFile.getConfig().getKeys(false))) {
-            final ConfigurationSection section = boostsFile.getConfig().getConfigurationSection(key);
-            if (section == null) {
-                continue;
-            }
             final Boost boost = boostsFile.getConfig().getSerializable(key, Boost.class);
             if (boost != null) {
                 boostManager.addBoost(boost);
                 continue;
             }
             boostsFile.getConfig().set(key, null);
+            boostManager.forceSave();
         }
 
         for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
@@ -77,6 +72,9 @@ public class ContinuityBoost extends CoreJavaPlugin {
             return;
         }
         boostManager.runTask();
+        ConfigurationSerialization.registerClass(Boost.class);
+        ConfigurationSerialization.registerClass(Boost.BoostType.class);
+        boostsFile = new ConfigFile(this, "boosts.yml");
         command.setTabCompleter(new TabCompletionHandler(this));
         getServer().getPluginManager().registerEvents(new PlayerExpChangeListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);

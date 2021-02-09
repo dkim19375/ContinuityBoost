@@ -8,10 +8,12 @@ api-version: 1.13
 
 commands:
   continuityboost:
+    usage: Do /continuityboost help for command usage!
     description: Main command
     aliases:
       - boost
       - cboost
+      - boosts
 
 permissions:
   continuityboost.all:
@@ -19,6 +21,50 @@ permissions:
     children:
       - continuityboost.currentboosts
       - continuityboost.boosts
+      - continuityboost.info
       - continuityboost.reload
       - continuityboost.stop.all
       - continuityboost.stop.type
+      - continuityboost.stop.uuid
+      - continuityboost.remove.all
+      - continuityboost.remove.type
+      - continuityboost.remove.uuid
+      - continuityboost.remove.add
+      - continuityboost.giveitem.all
+      - continuityboost.giveitem.self
+      - continuityboost.giveitem.others
+  continuityboost.currentboosts:
+    description: See all current boosts
+  continuityboost.boosts:
+    description: See all boosts
+  continuityboost.info:
+    description: See information about a boost
+  continuityboost.reload:
+    description: Reload the plugin's configuration files
+  continuityboost.stop.all:
+    description: Stop boosts
+    children:
+      - continuityboost.stop.type
+      - continuityboost.stop.uuid
+  continuityboost.stop.type:
+    description: Stop boosts by its type
+  continuityboost.stop.uuid:
+    description: Stop boosts by its UUID
+  continuityboost.remove.all:
+    description: Remove boosts
+    children:
+      - continuityboost.remove.type
+      - continuityboost.remove.uuid
+  continuityboost.remove.type:
+    description: Remove boosts by its type
+  continuityboost.remove.uuid:
+    description: Remove boosts by its UUID
+  continuityboost.giveitem.all:
+    description: Give boosts to yourself and other people
+    children:
+      - continuityboost.giveitem.self
+      - continuityboost.giveitem.others
+  continuityboost.giveitem.self:
+    description: Give yourself boosts
+  continuityboost.giveitem.others:
+    description: Give other people boosts

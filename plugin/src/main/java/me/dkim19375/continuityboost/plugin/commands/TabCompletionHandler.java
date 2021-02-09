@@ -5,15 +5,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TabCompletionHandler implements TabCompleter {
     private final ContinuityBoost plugin;
@@ -23,7 +24,8 @@ public class TabCompletionHandler implements TabCompleter {
     public TabCompletionHandler(ContinuityBoost plugin) {
         this.plugin = plugin;
         completesListMap = HashMultimap.create();
-        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add");
+        //noinspection SpellCheckingInspection
+        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add", "giveitem");
         add("stop", "type", "all", "<uuid>");
         add("time", "<time in seconds>");
         String[] types = new String[Boost.BoostType.values().length];
@@ -56,6 +58,14 @@ public class TabCompletionHandler implements TabCompleter {
         final Set<String> set = new HashSet<>();
         for (final Boost boost : plugin.getBoostManager().getBoosts()) {
             set.add(boost.getUniqueId().toString());
+        }
+        return set;
+    }
+
+    private Set<String> getPlayers() {
+        final Set<String> set = new HashSet<>();
+        for (final Player p : Bukkit.getOnlinePlayers()) {
+            set.add(p.getName());
         }
         return set;
     }
@@ -95,9 +105,17 @@ public class TabCompletionHandler implements TabCompleter {
                 if (args[0].equalsIgnoreCase("add")) {
                     return getPartial(args[1], completesListMap.get("time"));
                 }
+                //noinspection SpellCheckingInspection
+                if (args[0].equalsIgnoreCase("giveitem")) {
+                    return getPartial(args[1], getAllBoosts());
+                }
             case 3:
                 if (args[0].equalsIgnoreCase("add")) {
                     return getPartial(args[2], completesListMap.get("types"));
+                }
+                //noinspection SpellCheckingInspection
+                if (args[0].equalsIgnoreCase("giveitem")) {
+                    return getPartial(args[2], getPlayers());
                 }
             case 4:
                 if (args[0].equalsIgnoreCase("add")) {

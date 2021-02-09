@@ -1,6 +1,5 @@
 package me.dkim19375.continuityboost.plugin.util;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
@@ -22,10 +21,6 @@ public class Boost implements Cloneable, ConfigurationSerializable {
     @NotNull
     private String boostMessage;
     private final UUID uuid;
-
-    static {
-        ConfigurationSerialization.registerClass(Boost.class);
-    }
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
@@ -61,18 +56,10 @@ public class Boost implements Cloneable, ConfigurationSerializable {
     }
 
     @SuppressWarnings("unused")
-    public Boost(ConfigurationSection section) {
-        Map<String, Object> map = Objects.requireNonNull(Objects.requireNonNull(section.getParent()).getSerializable(section.getParent().getName(), Boost.class)).serialize();
-        duration = (int) map.get("duration");
-        type = (BoostType) map.get("type");
-        effect = (PotionEffect) map.get("effect");
-        boostingItem = (ItemStack) map.get("item");
-        multiplier = (int) map.get("multiplier");
-        boostMessage = (String) map.get("boost-message");
-        uuid = UUID.fromString((String) map.get("uuid"));
-    }
-
-    public static Boost deserialize(@NotNull Map<String, Object> map) {
+    public static Boost deserialize(Map<String, Object> map) {
+        if (map == null) {
+            return null;
+        }
         final int duration = (int) map.get("duration");
         final BoostType type = (BoostType) map.get("type");
         final PotionEffect effect = (PotionEffect) map.get("effect");
@@ -212,5 +199,10 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         if (o == null || getClass() != o.getClass()) return false;
         Boost boost = (Boost) o;
         return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, uuid);
     }
 }

@@ -3,6 +3,7 @@ package me.dkim19375.continuityboost.plugin.commands;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.dkim19375core.NumberUtils;
+import me.dkim19375.dkim19375core.PlayerUtils;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.WordUtils;
@@ -11,6 +12,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +26,8 @@ public class CommandHandler implements CommandExecutor {
     private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to run this command!";
     private static final String TOO_MANY_ARGS = ChatColor.RED + "Too many arguments!";
     private static final String LITTLE_ARGS = ChatColor.RED + "Not enough arguments!";
+    private static final String MUST_BE_PLAYER = ChatColor.RED + "You must be a player!";
+    private static final String INVALID_UUID = ChatColor.RED + "Invalid UUID!";
     private final ContinuityBoost plugin;
 
     public CommandHandler(ContinuityBoost plugin) {
@@ -37,10 +41,20 @@ public class CommandHandler implements CommandExecutor {
             showHelp(sender, label);
             return true;
         }
-        if (args.length > 2 && !args[0].equalsIgnoreCase("add")) {
-            sender.sendMessage(TOO_MANY_ARGS);
-            showHelp(sender, label);
-            return true;
+        if (args.length > 2) {
+            if (!args[0].equalsIgnoreCase("add")) {
+                //noinspection SpellCheckingInspection
+                if (!args[0].equalsIgnoreCase("giveitem")) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    showHelp(sender, label);
+                    return true;
+                }
+                if (args.length > 3) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    showHelp(sender, label);
+                    return true;
+                }
+            }
         }
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "help":
@@ -89,7 +103,7 @@ public class CommandHandler implements CommandExecutor {
                     //noinspection ResultOfMethodCallIgnored
                     UUID.fromString(args[1]);
                 } catch (IllegalArgumentException e) {
-                    sender.sendMessage(ChatColor.RED + "Invalid UUID!");
+                    sender.sendMessage(INVALID_UUID);
                     return true;
                 }
                 final UUID uuid = UUID.fromString(args[1]);
@@ -101,7 +115,7 @@ public class CommandHandler implements CommandExecutor {
                     }
                 }
                 if (boost == null) {
-                    sender.sendMessage(ChatColor.RED + "Invalid UUID!");
+                    sender.sendMessage(INVALID_UUID);
                     return true;
                 }
                 sender.sendMessage(ChatColor.GOLD + "Info:");
@@ -214,7 +228,7 @@ public class CommandHandler implements CommandExecutor {
                 return true;
             case "add":
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage(ChatColor.RED + "You must be a player!");
+                    sender.sendMessage(MUST_BE_PLAYER);
                     showHelp(sender, label);
                     return true;
                 }
@@ -268,11 +282,62 @@ public class CommandHandler implements CommandExecutor {
                 }
                 sender.sendMessage(ChatColor.GREEN + "Successfully created a boost! (UUID: " + boostUUID + ")");
                 return true;
+            //noinspection SpellCheckingInspection
+            case "giveitem":
+                if (args.length < 2) {
+                    sender.sendMessage(LITTLE_ARGS);
+                    showHelp(sender, label);
+                    return true;
+                }
+                if (args.length == 2) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(MUST_BE_PLAYER);
+                        showHelp(sender, label);
+                        return true;
+                    }
+                    final Player p = (Player) sender;
+                    final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[1]);
+                    if (boostToGive == null) {
+                        p.sendMessage(INVALID_UUID);
+                        showHelp(sender, label);
+                        return true;
+                    }
+                    final boolean dropped = giveItem(p, boostToGive.getBoostingItem());
+                    p.sendMessage(ChatColor.GREEN + "You have been given the item!"
+                            + (dropped ? "\nYour inventory is full so it was dropped on the ground." : ""));
+                    return true;
+                }
+                final Player playerToGive = PlayerUtils.getFromAll(args[1]);
+                final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[2]);
+                if (playerToGive == null) {
+                    sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
+                    showHelp(sender, label);
+                    return true;
+                }
+                if (boostToGive == null) {
+                    sender.sendMessage(INVALID_UUID);
+                    showHelp(sender, label);
+                    return true;
+                }
+                final boolean dropped = giveItem(playerToGive, boostToGive.getBoostingItem());
+                sender.sendMessage(ChatColor.GREEN + "Successfully gave them the item!");
+                playerToGive.sendMessage(ChatColor.GREEN + "You have been given a boosting item!"
+                        + (dropped ? "\nYour inventory is full so it was dropped on the ground." : ""));
+                return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid argument!");
                 showHelp(sender, label);
                 return true;
         }
+    }
+
+    private boolean giveItem(Player p, ItemStack item) {
+        if (p.getInventory().firstEmpty() == -1) {
+            p.getWorld().dropItemNaturally(p.getLocation(), item);
+            return true;
+        }
+        p.getInventory().addItem(item);
+        return false;
     }
 
     private void showUUIDUsingComponents(@NotNull CommandSender sender, Boost boost) {
@@ -287,7 +352,7 @@ public class CommandHandler implements CommandExecutor {
 
     private void showHelp(CommandSender sender, String label) {
         sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "ContinuityBoost Commands");
-        sendFormatted(sender, label, "help", "Show this help page");
+        sendFormatted(sender, label, "help", "Show this help page. <param> = required, [param] = optional");
         sendFormatted(sender, label, "currentBoosts", "Show all boosts currently happening");
         sendFormatted(sender, label, "boosts", "Show all boosts saved in the file");
         sendFormatted(sender, label, "info <uuid>", "See more information about a boost");
@@ -295,6 +360,8 @@ public class CommandHandler implements CommandExecutor {
         sendFormatted(sender, label, "stop <type|all|uuid>", "Stop all boosts, or a specific type");
         sendFormatted(sender, label, "remove <type|all|uuid>", "Remove all boosts, or a specific type");
         sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT)> <boost message>", "Add the current item");
+        //noinspection SpellCheckingInspection
+        sendFormatted(sender, label, "giveitem <uuid> [player]", "Give the item to a player");
     }
 
     private String getRestArgs(final String[] args, final int index) {
