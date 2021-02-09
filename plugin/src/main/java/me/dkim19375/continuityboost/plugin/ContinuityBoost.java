@@ -52,10 +52,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
                 try {
                     boostManager.addBoost(boost);
                 } catch (NullPointerException ignored) {
-                    boostsFile.getConfig().set(key, null);
-                    getBoostManager().getBoosts().remove(boost);
-                    getBoostManager().getCurrentBoosts().remove(boost);
-                    boostManager.forceSave();
+                    boostManager.removeBoost(boost);
                 }
                 continue;
             }
@@ -65,7 +62,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
 
         for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
             if (boostsFile.getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
-                boostManager.getBoosts().remove(boost);
+                boostManager.removeBoost(boost);
             }
         }
     }

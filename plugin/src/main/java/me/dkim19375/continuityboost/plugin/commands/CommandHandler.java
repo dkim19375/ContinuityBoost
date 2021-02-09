@@ -77,6 +77,7 @@ public class CommandHandler implements CommandExecutor {
                     return true;
                 }
                 sender.sendMessage(ChatColor.GREEN + "Boosts:");
+                System.out.println(plugin.getBoostManager().getBoosts());
                 if (sender instanceof Player) {
                     if (NumberUtils.percentChance(80)) {
                         sender.sendMessage(ChatColor.GREEN + "Tip: You can click one of the UUIDs to copy it! (The uuid will show in the chat)");
@@ -89,10 +90,7 @@ public class CommandHandler implements CommandExecutor {
                         uuids.add(boost.getUniqueId());
                         continue;
                     }
-                    plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
-                    plugin.getBoostManager().getBoosts().remove(boost);
-                    plugin.getBoostManager().getCurrentBoosts().remove(boost);
-                    plugin.getBoostManager().forceSave();
+                    plugin.getBoostManager().removeBoost(boost);
                 }
                 return true;
             case "info":

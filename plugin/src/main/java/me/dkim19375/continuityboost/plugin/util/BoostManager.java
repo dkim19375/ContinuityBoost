@@ -26,7 +26,14 @@ public class BoostManager {
     public void runTask() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             final long time = System.currentTimeMillis();
-            for (Boost boost : new HashSet<>(currentBoosts.keySet())) {
+            Iterator<Boost> iterator = currentBoosts.keySet().iterator();
+            while(iterator.hasNext()) {
+                final Boost boost = iterator.next();
+                if (currentBoosts.get(boost) == null) {
+                    iterator.remove();
+                    removeBoost(boost);
+                    continue;
+                }
                 final long difference = (time - currentBoosts.get(boost)) / 1000;
                 if (difference > boost.getDuration()) {
                     forceStopBoost(boost);
@@ -47,12 +54,17 @@ public class BoostManager {
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), boost);
     }
 
-    public void removeBoost(Boost boost) {
-        boosts.remove(boost);
-        currentBoosts.remove(boost);
-        if (plugin.getBoostsFile().getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
-            return;
+    private void removeCurrentBoost(UUID uuid) {
+        for (Boost b : currentBoosts.keySet()) {
+            if (b.getUniqueId().equals(uuid)) {
+                currentBoosts.remove(b);
+            }
         }
+    }
+
+    public void removeBoost(Boost boost) {
+        boosts.removeIf(b -> b.getUniqueId().equals(boost.getUniqueId()));
+        removeCurrentBoost(boost.getUniqueId());
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
         forceSave();
     }
