@@ -10,6 +10,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class PlayerInteractListener implements Listener {
@@ -28,21 +30,27 @@ public class PlayerInteractListener implements Listener {
         if (clickedItem == null) {
             return;
         }
-
-        Boost boost = null;
+        Set<Boost> boosts = new HashSet<>();
         for (Boost b : plugin.getBoostManager().getBoosts()) {
             if (isSimilar(b.getBoostingItem(), clickedItem)) {
-                boost = b;
-                break;
+                boosts.add(b);
             }
         }
-        if (boost == null) {
+        if (boosts.size() < 1) {
             return;
         }
         if (plugin.getConfig().getBoolean("remove-item")) {
-            e.getPlayer().getInventory().remove(clickedItem);
+            if (e.getPlayer().getInventory().getItemInMainHand().isSimilar(e.getItem())) {
+                e.getPlayer().getInventory().setItemInMainHand(null);
+            } else {
+                if (e.getPlayer().getInventory().getItemInOffHand().isSimilar(e.getItem())) {
+                    e.getPlayer().getInventory().setItemInOffHand(null);
+                }
+            }
         }
-        plugin.getBoostManager().startBoost(boost);
+        for (Boost boost : boosts) {
+            plugin.getBoostManager().startBoost(boost);
+        }
     }
 
     public boolean isSimilar(ItemStack item1, ItemStack item2) {
