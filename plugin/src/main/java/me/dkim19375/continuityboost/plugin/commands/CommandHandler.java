@@ -121,10 +121,12 @@ public class CommandHandler implements CommandExecutor {
                 sender.sendMessage(ChatColor.GOLD + "Info:");
                 sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
                 if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
+                    final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
+                    final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
                     sender.sendMessage(ChatColor.GOLD + "Time started: "
-                            + ChatColor.AQUA + formatNumbers(plugin.getBoostManager().getCurrentBoosts().get(boost) / 1000) + " ago");
+                            + ChatColor.AQUA + formatNumbers((-(startedTime - System.currentTimeMillis())) / 1000) + " ago");
                     sender.sendMessage(ChatColor.GOLD + "Time when expires: "
-                            + ChatColor.AQUA + formatNumbers(System.currentTimeMillis() - plugin.getBoostManager().getCurrentBoosts().get(boost) / 1000));
+                            + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
                 }
                 sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
                 sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.AQUA + formatString(boost.getBoostingItem().getType().name()));
@@ -402,10 +404,10 @@ public class CommandHandler implements CommandExecutor {
         seconds = (int) newNumber % 60;
         if (hours < 1) {
             if (minutes < 1) {
-                return seconds + " seconds";
+                return seconds + " second" + (seconds == 1 ? "" : "s");
             }
-            return minutes + " minutes, " + seconds + " seconds";
+            return minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
         }
-        return hours + " hours, " + minutes + " minutes, " + seconds + " seconds";
+        return hours + " hour" + (hours == 1 ? "" : "s") + ", " + minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
     }
 }
