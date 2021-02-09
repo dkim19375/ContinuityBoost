@@ -41,16 +41,20 @@ public class PlayerInteractListener implements Listener {
         }
         if (plugin.getConfig().getBoolean("remove-item")) {
             if (e.getPlayer().getInventory().getItemInMainHand().isSimilar(e.getItem())) {
-                e.getPlayer().getInventory().setItemInMainHand(null);
+                removeOneItem(e.getPlayer().getInventory().getItemInMainHand());
             } else {
                 if (e.getPlayer().getInventory().getItemInOffHand().isSimilar(e.getItem())) {
-                    e.getPlayer().getInventory().setItemInOffHand(null);
+                    removeOneItem(e.getPlayer().getInventory().getItemInOffHand());
                 }
             }
         }
         for (Boost boost : boosts) {
             plugin.getBoostManager().startBoost(boost);
         }
+    }
+
+    private void removeOneItem(ItemStack item) {
+        item.setAmount(item.getAmount() - 1);
     }
 
     public boolean isSimilar(ItemStack item1, ItemStack item2) {
@@ -60,24 +64,16 @@ public class PlayerInteractListener implements Listener {
         final ItemMeta meta1 = item1.getItemMeta();
         final ItemMeta meta2 = item2.getItemMeta();
         if (meta1 == null && meta2 != null) {
-            Bukkit.getLogger().log(Level.SEVERE, "boosting item = null");
             return false;
         }
         if (meta1 != null && meta2 == null) {
-            Bukkit.getLogger().log(Level.SEVERE, "clicked item = null");
             return false;
         }
         if (meta1 != null) {
             if (!meta1.equals(meta2)) {
-                System.out.println("Doesn't equal");
                 return false;
             }
-            System.out.println("Null meta");
         }
-        if (!item1.getEnchantments().equals(item2.getEnchantments())) {
-            System.out.println("Different enchants");
-            return false;
-        }
-        return true;
+        return item1.getEnchantments().equals(item2.getEnchantments());
     }
 }

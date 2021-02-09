@@ -161,6 +161,7 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         return map;
     }
 
+    @Nullable
     public Set<Material> getAppliedBlocks() {
         return appliedBlocks;
     }
@@ -210,11 +211,18 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Boost boost = (Boost) o;
-        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage);
+        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage) && uuid.equals(boost.uuid) && Objects.equals(appliedBlocks, boost.appliedBlocks);
+    }
+
+    public boolean isSimilar(Boost boost) {
+        if (equals(boost)) {
+            return true;
+        }
+        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage) && Objects.equals(appliedBlocks, boost.appliedBlocks);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, uuid);
+        return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, uuid, appliedBlocks);
     }
 }

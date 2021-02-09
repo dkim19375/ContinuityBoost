@@ -87,8 +87,17 @@ public class CommandHandler implements CommandExecutor {
                         sender.sendMessage(ChatColor.GREEN + "Tip: You can click one of the UUIDs to copy it! (The uuid will show in the chat)");
                     }
                 }
+                Set<UUID> uuids = new HashSet<>();
                 for (Boost boost : plugin.getBoostManager().getBoosts()) {
-                    showUUIDUsingComponents(sender, boost);
+                    if (!uuids.contains(boost.getUniqueId())) {
+                        showUUIDUsingComponents(sender, boost);
+                        uuids.add(boost.getUniqueId());
+                        continue;
+                    }
+                    plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
+                    plugin.getBoostManager().getBoosts().remove(boost);
+                    plugin.getBoostManager().getCurrentBoosts().remove(boost);
+                    plugin.getBoostManager().forceSave();
                 }
                 return true;
             case "info":
@@ -116,27 +125,34 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(INVALID_UUID);
                     return true;
                 }
-                sender.sendMessage(ChatColor.GOLD + "Info:");
-                sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
-                if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
-                    final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
-                    final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
-                    sender.sendMessage(ChatColor.GOLD + "Time started: "
-                            + ChatColor.AQUA + formatNumbers((-(startedTime - System.currentTimeMillis())) / 1000) + " ago");
-                    sender.sendMessage(ChatColor.GOLD + "Time when expires: "
-                            + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
+                try {
+                    sender.sendMessage(ChatColor.GOLD + "Info:");
+                    sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
+                    if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
+                        final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
+                        final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
+                        sender.sendMessage(ChatColor.GOLD + "Time started: "
+                                + ChatColor.AQUA + formatNumbers((-(startedTime - System.currentTimeMillis())) / 1000) + " ago");
+                        sender.sendMessage(ChatColor.GOLD + "Time when expires: "
+                                + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
+                    }
+                    sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
+                    sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.AQUA + formatString(boost.getBoostingItem().getType().name()));
+                    sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((boost.getBoostingItem().getItemMeta() == null)
+                            ? "" : Objects.requireNonNull(boost.getBoostingItem().getItemMeta()).getDisplayName()));
+                    final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
+                    message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
+                    if (sender instanceof Player) {
+                        ((Player) sender).spigot().sendMessage(message);
+                        return true;
+                    }
+                    sender.sendMessage(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
+                } catch (NullPointerException ignored) {
+                    plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
+                    plugin.getBoostManager().getBoosts().remove(boost);
+                    plugin.getBoostManager().getCurrentBoosts().remove(boost);
+                    plugin.getBoostManager().forceSave();
                 }
-                sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
-                sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.AQUA + formatString(boost.getBoostingItem().getType().name()));
-                sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((boost.getBoostingItem().getItemMeta() == null)
-                        ? "" : Objects.requireNonNull(boost.getBoostingItem().getItemMeta()).getDisplayName()));
-                final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
-                if (sender instanceof Player) {
-                    ((Player) sender).spigot().sendMessage(message);
-                    return true;
-                }
-                sender.sendMessage(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
                 return true;
             case "reload":
                 if (args.length > 1) {

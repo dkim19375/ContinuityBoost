@@ -36,9 +36,10 @@ public class BlockBreakListener implements Listener {
             return;
         }
         e.setDropItems(false);
-        List<ItemStack> drops = new ArrayList<>(e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
+        final List<ItemStack> original = new ArrayList<>(e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
+        final List<ItemStack> drops = new ArrayList<>();
         for (int i = 0; i < boost.getMultiplier(); i++) {
-            for (ItemStack drop : new ArrayList<>(drops)) {
+            for (ItemStack drop : original) {
                 final Set<Material> appliedBlocks = boost.getAppliedBlocks();
                 if (appliedBlocks != null) {
                     if (appliedBlocks.contains(drop.getType())) {
