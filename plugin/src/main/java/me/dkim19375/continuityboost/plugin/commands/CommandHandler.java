@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,10 +18,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class CommandHandler implements CommandExecutor {
     private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to run this command!";
@@ -263,24 +261,66 @@ public class CommandHandler implements CommandExecutor {
                     return true;
                 }
                 final PotionEffectType effectType = PotionEffectType.getByName(args[4]);
+                final Set<Material> selectedMaterials = new HashSet<>();
+                final Set<String> invalidMaterials = new HashSet<>();
+                if (args[4].contains(",")) {
+                    for (String s : args[4].split(",")) {
+                        final Material mat = Material.matchMaterial(s.toUpperCase());
+                        if (mat == null) {
+                            invalidMaterials.add(s);
+                            continue;
+                        }
+                        if (mat.isBlock()) {
+                            selectedMaterials.add(mat);
+                            continue;
+                        }
+                        invalidMaterials.add(s);
+                    }
+                } else {
+                    final Material mat = Material.matchMaterial(args[4].toUpperCase());
+                    if (mat != null) {
+                        if (mat.isBlock()) {
+                            selectedMaterials.add(mat);
+                        } else {
+                            invalidMaterials.add(args[4]);
+                        }
+                    } else {
+                        invalidMaterials.add(args[4]);
+                    }
+                }
                 final String boostMessage;
                 UUID boostUUID;
-                if (type == Boost.BoostType.EFFECT) {
-                    if (effectType == null) {
-                        sender.sendMessage(ChatColor.RED + args[4] + " is not a potion effect!");
-                        showHelp(sender, label);
-                        return true;
-                    }
-                    boostMessage = getRestArgs(args, 5);
-                    final PotionEffect effect = new PotionEffect(effectType, duration * 20, multiplier - 1);
-                    Boost newBoost = new Boost(player.getInventory().getItemInMainHand(), duration, type, boostMessage, effect, multiplier, null);
-                    plugin.getBoostManager().addBoost(newBoost);
-                    boostUUID = newBoost.getUniqueId();
-                } else {
-                    boostMessage = getRestArgs(args, 4);
-                    Boost newBoost = new Boost(player.getInventory().getItemInMainHand(), duration, type, boostMessage, null, multiplier, null);
-                    plugin.getBoostManager().addBoost(newBoost);
-                    boostUUID = newBoost.getUniqueId();
+                switch (type) {
+                    case EFFECT:
+                        if (effectType == null) {
+                            sender.sendMessage(ChatColor.RED + args[4] + " is not a potion effect!");
+                            return true;
+                        }
+                        boostMessage = getRestArgs(args, 5);
+                        final PotionEffect effect = new PotionEffect(effectType, duration * 20, multiplier - 1);
+                        Boost newBoost = new Boost(player.getInventory().getItemInMainHand(), duration, type, boostMessage, effect, multiplier, null, null);
+                        plugin.getBoostManager().addBoost(newBoost);
+                        boostUUID = newBoost.getUniqueId();
+                        break;
+                    case ITEM_DROP_MULTIPLIER:
+                        if (invalidMaterials.size() > 0) {
+                            sender.sendMessage(ChatColor.RED + "The following were not valid Materials:");
+                            for (String s : invalidMaterials) {
+                                sender.sendMessage(ChatColor.GOLD + s);
+                            }
+                            return true;
+                        }
+                        boostMessage = getRestArgs(args, 5);
+                        Boost newB = new Boost(player.getInventory().getItemInMainHand(), duration, type, boostMessage, null, multiplier, null, selectedMaterials);
+                        plugin.getBoostManager().addBoost(newB);
+                        boostUUID = newB.getUniqueId();
+                        break;
+                    default:
+                        boostMessage = getRestArgs(args, 4);
+                        Boost nBoost = new Boost(player.getInventory().getItemInMainHand(), duration, type, boostMessage, null, multiplier, null, null);
+                        plugin.getBoostManager().addBoost(nBoost);
+                        boostUUID = nBoost.getUniqueId();
+                        break;
                 }
                 sender.sendMessage(ChatColor.GREEN + "Successfully created a boost! (UUID: " + boostUUID + ")");
                 return true;
@@ -326,6 +366,62 @@ public class CommandHandler implements CommandExecutor {
                 playerToGive.sendMessage(ChatColor.GREEN + "You have been given a boosting item!"
                         + (dropped ? "\nYour inventory is full so it was dropped on the ground." : ""));
                 return true;
+            case "toggle":
+                if (args.length > 2) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    showHelp(sender, label);
+                    return true;
+                }
+                if (args.length < 2) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(MUST_BE_PLAYER);
+                        showHelp(sender, label);
+                        return true;
+                    }
+                    final Player togglePlayer = (Player) sender;
+                    final boolean toggled = plugin.getBoostManager().togglePlayer(togglePlayer.getUniqueId());
+                    if (toggled) {
+                        sender.sendMessage(ChatColor.GREEN + "You have now toggled on the boosts!");
+                        for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(Boost.BoostType.EFFECT)) {
+                            if (toggleBoost.getEffect() != null) {
+                                togglePlayer.addPotionEffect(toggleBoost.getEffect());
+                            }
+                        }
+                        return true;
+                    }
+                    sender.sendMessage(ChatColor.GOLD + "You have no toggled off the boosts!");
+                    for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(Boost.BoostType.EFFECT)) {
+                        if (toggleBoost.getEffect() != null) {
+                            togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
+                        }
+                    }
+                    return true;
+                }
+                final Player togglePlayer = PlayerUtils.getFromAll(args[1]);
+                if (togglePlayer == null) {
+                    sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
+                    showHelp(sender, label);
+                    return true;
+                }
+                final boolean toggled = plugin.getBoostManager().togglePlayer(togglePlayer.getUniqueId());
+                if (toggled) {
+                    sender.sendMessage(ChatColor.GREEN + "You have now toggled on the boosts!");
+                    togglePlayer.sendMessage(ChatColor.GREEN + "Your boost has been toggled on by someone else!");
+                    for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(Boost.BoostType.EFFECT)) {
+                        if (toggleBoost.getEffect() != null) {
+                            togglePlayer.addPotionEffect(toggleBoost.getEffect());
+                        }
+                    }
+                    return true;
+                }
+                sender.sendMessage(ChatColor.GOLD + "You have no toggled off the boosts!");
+                togglePlayer.sendMessage(ChatColor.GOLD + "Your boost has been toggled off by someone else!");
+                for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(Boost.BoostType.EFFECT)) {
+                    if (toggleBoost.getEffect() != null) {
+                        togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
+                    }
+                }
+                return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid argument!");
                 showHelp(sender, label);
@@ -361,9 +457,11 @@ public class CommandHandler implements CommandExecutor {
         sendFormatted(sender, label, "reload", "Reload the configuration files");
         sendFormatted(sender, label, "stop <type|all|uuid>", "Stop all boosts, or a specific type");
         sendFormatted(sender, label, "remove <type|all|uuid>", "Remove all boosts, or a specific type");
-        sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT)> <boost message>", "Add the current item");
+        sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT), or Material,Material,Material etc> <boost message>",
+                "Add the current item");
         //noinspection SpellCheckingInspection
         sendFormatted(sender, label, "giveitem <uuid> [player]", "Give the item to a player");
+        sendFormatted(sender, label, "toggle [player]", "Toggle the boost for a player");
     }
 
     private String getRestArgs(final String[] args, final int index) {

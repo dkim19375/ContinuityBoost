@@ -1,5 +1,6 @@
 package me.dkim19375.continuityboost.plugin.util;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
@@ -21,10 +22,12 @@ public class Boost implements Cloneable, ConfigurationSerializable {
     @NotNull
     private String boostMessage;
     private final UUID uuid;
+    @Nullable
+    private Set<Material> appliedBlocks;
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid) {
+            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, Set<Material> appliedBlocks) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
@@ -36,7 +39,7 @@ public class Boost implements Cloneable, ConfigurationSerializable {
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, @Nullable UUID uuid) {
+            , @Nullable PotionEffect effect, @Nullable UUID uuid, Set<Material> appliedBlocks) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
@@ -47,7 +50,7 @@ public class Boost implements Cloneable, ConfigurationSerializable {
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable UUID uuid) {
+            , @Nullable UUID uuid, Set<Material> appliedBlocks) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
@@ -67,7 +70,12 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         final int multiplier = (int) map.get("multiplier");
         final String boostMessage = (String) map.get("boost-message");
         final UUID uuid = UUID.fromString((String) map.get("uuid"));
-        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid);
+        Set<Material> appliedBlocks = null;
+        try {
+            //noinspection unchecked
+            appliedBlocks = (Set<Material>) map.get("applied-blocks");
+        } catch (Exception ignored) {}
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks);
     }
 
     public int getDuration() {
@@ -151,6 +159,10 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         map.put("boost-message", boostMessage);
         map.put("uuid", uuid.toString());
         return map;
+    }
+
+    public Set<Material> getAppliedBlocks() {
+        return appliedBlocks;
     }
 
     @SuppressWarnings("unused")

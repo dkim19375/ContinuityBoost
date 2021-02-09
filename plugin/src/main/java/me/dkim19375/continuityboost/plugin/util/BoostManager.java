@@ -3,10 +3,8 @@ package me.dkim19375.continuityboost.plugin.util;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +16,8 @@ public class BoostManager {
     private final Set<Boost> boosts = new HashSet<>();
     @NotNull
     private final Map<Boost, Long> currentBoosts = new HashMap<>();
+    @NotNull
+    private final Set<UUID> toggledPlayers = new HashSet<>();
 
     public BoostManager(final ContinuityBoost plugin) {
         this.plugin = plugin;
@@ -165,5 +165,35 @@ public class BoostManager {
             }
         }
         return boosts;
+    }
+
+    @NotNull
+    public Set<UUID> getToggledPlayers() {
+        return toggledPlayers;
+    }
+
+    public boolean isToggled(UUID uuid) {
+        return toggledPlayers.contains(uuid);
+    }
+
+    public boolean isToggled(Player player) {
+        return isToggled(player.getUniqueId());
+    }
+
+    public boolean togglePlayer(UUID uuid) {
+        if (toggledPlayers.contains(uuid)) {
+            toggledPlayers.remove(uuid);
+            return false;
+        }
+        toggledPlayers.add(uuid);
+        return true;
+    }
+
+    public void togglePlayerOn(UUID uuid) {
+        toggledPlayers.add(uuid);
+    }
+
+    public void togglePlayerOff(UUID uuid) {
+        toggledPlayers.remove(uuid);
     }
 }

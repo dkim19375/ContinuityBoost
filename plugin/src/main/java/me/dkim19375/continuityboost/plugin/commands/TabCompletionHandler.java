@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -20,12 +21,13 @@ public class TabCompletionHandler implements TabCompleter {
     private final ContinuityBoost plugin;
 
     private final HashMultimap<String, String> completesListMap;
+    private static Set<String> materials;
 
     public TabCompletionHandler(ContinuityBoost plugin) {
         this.plugin = plugin;
         completesListMap = HashMultimap.create();
         //noinspection SpellCheckingInspection
-        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add", "giveitem");
+        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add", "giveitem", "toggle");
         add("stop", "type", "all", "<uuid>");
         add("time", "<time in seconds>");
         String[] types = new String[Boost.BoostType.values().length];
@@ -44,6 +46,14 @@ public class TabCompletionHandler implements TabCompleter {
         }
         add("effects", effects);
         add("msg", "<boost message>");
+    }
+
+    public static void setMaterials(Set<String> materials) {
+        TabCompletionHandler.materials = materials;
+    }
+
+    public static Set<String> getMaterials() {
+        return materials;
     }
 
     private Set<String> getCurrentBoosts() {
@@ -109,6 +119,9 @@ public class TabCompletionHandler implements TabCompleter {
                 if (args[0].equalsIgnoreCase("giveitem")) {
                     return getPartial(args[1], getAllBoosts());
                 }
+                if (args[0].equalsIgnoreCase("toggle")) {
+                    return getPartial(args[1], getPlayers());
+                }
             case 3:
                 if (args[0].equalsIgnoreCase("add")) {
                     return getPartial(args[2], completesListMap.get("types"));
@@ -128,6 +141,11 @@ public class TabCompletionHandler implements TabCompleter {
                     if (boostType != null) {
                         if (boostType == Boost.BoostType.EFFECT) {
                             return getPartial(args[4], completesListMap.get("effects"));
+                        }
+                        if (boostType == Boost.BoostType.ITEM_DROP_MULTIPLIER) {
+                            if (!args[4].contains(",")) {
+                                return getPartial(args[4], materials);
+                            }
                         }
                     }
                     return getPartial(args[4], completesListMap.get("msg"));

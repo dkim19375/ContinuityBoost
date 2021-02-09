@@ -11,10 +11,15 @@ import me.dkim19375.continuityboost.plugin.util.BoostManager;
 import me.dkim19375.continuityboost.plugin.util.LoggingUtils;
 import me.dkim19375.dkim19375core.ConfigFile;
 import me.dkim19375.dkim19375core.CoreJavaPlugin;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class ContinuityBoost extends CoreJavaPlugin {
@@ -80,6 +85,13 @@ public class ContinuityBoost extends CoreJavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockBreakListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            final Set<String> materials = new HashSet<>();
+            for (Material material : Material.values()) {
+                materials.add(material.name());
+            }
+            TabCompletionHandler.setMaterials(materials);
+        });
     }
 
     public BoostManager getBoostManager() {
