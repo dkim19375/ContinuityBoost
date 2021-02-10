@@ -28,7 +28,7 @@ public class BoostManager {
     public void runTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             final long time = System.currentTimeMillis();
-            for (Boost boost : currentBoosts.keySet()) {
+            for (Boost boost : new HashSet<>(currentBoosts.keySet())) {
                 if (currentBoosts.get(boost) == null) {
                     continue;
                 }
@@ -54,7 +54,7 @@ public class BoostManager {
     }
 
     private void removeCurrentBoost(UUID uuid) {
-        for (Boost b : currentBoosts.keySet()) {
+        for (Boost b : new HashSet<>(currentBoosts.keySet())) {
             if (b.getUniqueId().equals(uuid)) {
                 currentBoosts.remove(b);
             }

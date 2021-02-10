@@ -38,6 +38,7 @@ public class PlayerInteractListener implements Listener {
         if (boosts.size() < 1) {
             return;
         }
+        e.setCancelled(true);
         if (plugin.getConfig().getBoolean("remove-item")) {
             if (e.getPlayer().getInventory().getItemInMainHand().isSimilar(e.getItem())) {
                 removeOneItem(e.getPlayer().getInventory().getItemInMainHand());

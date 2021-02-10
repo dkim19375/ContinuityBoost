@@ -24,7 +24,7 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     private String boostMessage;
     private final UUID uuid;
     @Nullable
-    private final Set<Material> appliedBlocks;
+    private Set<Material> appliedBlocks;
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
@@ -51,12 +51,11 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         final int multiplier = (int) map.get("multiplier");
         final String boostMessage = (String) map.get("boost-message");
         final UUID uuid = UUID.fromString((String) map.get("uuid"));
-        Set<Material> appliedBlocks = null;
+        AppliedBlocksHolder appliedBlocks = null;
         try {
-            //noinspection unchecked
-            appliedBlocks = (Set<Material>) map.get("applied-blocks");
+            appliedBlocks = (AppliedBlocksHolder) map.get("applied-blocks");
         } catch (Exception ignored) {}
-        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks);
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks == null ? null : appliedBlocks.getAppliedBlocks());
     }
 
     public int getDuration() {
@@ -104,17 +103,6 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         this.multiplier = multiplier;
     }
 
-    @Override
-    public String toString() {
-        return "Boost{" +
-                "duration=" + duration +
-                ", type=" + type +
-                ", effect=" + effect +
-                ", boostingItem=" + boostingItem +
-                ", multiplier=" + multiplier +
-                '}';
-    }
-
     @NotNull
     public String getBoostMessage() {
         return boostMessage;
@@ -139,6 +127,7 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         map.put("multiplier", multiplier);
         map.put("boost-message", boostMessage);
         map.put("uuid", uuid.toString());
+        map.put("applied-blocks", appliedBlocks == null ? null : new AppliedBlocksHolder(appliedBlocks));
         return map;
     }
 

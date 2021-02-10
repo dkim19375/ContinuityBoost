@@ -9,6 +9,7 @@ import me.dkim19375.continuityboost.plugin.listeners.InventoryClickListener;
 import me.dkim19375.continuityboost.plugin.listeners.PlayerExpChangeListener;
 import me.dkim19375.continuityboost.plugin.listeners.PlayerInteractListener;
 import me.dkim19375.continuityboost.plugin.listeners.PlayerJoinListener;
+import me.dkim19375.continuityboost.plugin.util.AppliedBlocksHolder;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.continuityboost.plugin.util.BoostManager;
 import me.dkim19375.continuityboost.plugin.util.LoggingUtils;
@@ -81,6 +82,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         boostManager.runTask();
         ConfigurationSerialization.registerClass(Boost.class);
         ConfigurationSerialization.registerClass(BoostType.class);
+        ConfigurationSerialization.registerClass(AppliedBlocksHolder.class);
         boostsFile = new ConfigFile(this, "boosts.yml");
         command.setTabCompleter(new TabCompletionHandler(this));
         getServer().getPluginManager().registerEvents(new PlayerExpChangeListener(this), this);
