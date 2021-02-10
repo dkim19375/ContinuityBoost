@@ -4,8 +4,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import me.dkim19375.continuityboost.api.BoostType;
-import me.dkim19375.continuityboost.api.Booster;
+
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
+import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -58,7 +59,7 @@ public class TabCompletionHandler implements TabCompleter {
 
     private Set<String> getCurrentBoosts() {
         final Set<String> set = new HashSet<>();
-        for (final Booster boost : plugin.getBoostManager().getCurrentBoosts().keySet()) {
+        for (final Boost boost : plugin.getBoostManager().getCurrentBoosts().keySet()) {
             set.add(boost.getUniqueId().toString());
         }
         return set;
@@ -66,7 +67,7 @@ public class TabCompletionHandler implements TabCompleter {
 
     private Set<String> getAllBoosts() {
         final Set<String> set = new HashSet<>();
-        for (final Booster boost : plugin.getBoostManager().getBoosts()) {
+        for (final Boost boost : plugin.getBoostManager().getBoosts()) {
             set.add(boost.getUniqueId().toString());
         }
         return set;

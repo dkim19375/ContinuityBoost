@@ -1,7 +1,7 @@
 package me.dkim19375.continuityboost.plugin;
 
 import me.dkim19375.continuityboost.api.BoostType;
-import me.dkim19375.continuityboost.api.Booster;
+
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
 import me.dkim19375.continuityboost.plugin.listeners.BlockBreakListener;
@@ -62,7 +62,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
             boostManager.forceSave();
         }
 
-        for (final Booster boost : new HashSet<>(boostManager.getBoosts())) {
+        for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
             if (boostsFile.getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
                 boostManager.removeBoost(boost);
             }
@@ -70,7 +70,6 @@ public class ContinuityBoost extends CoreJavaPlugin {
     }
 
     public void register() {
-        //noinspection SpellCheckingInspection
         final PluginCommand command = getCommand("continuityboost");
         if (command != null) {
             command.setExecutor(new CommandHandler(this));

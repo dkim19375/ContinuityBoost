@@ -1,7 +1,8 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
-import me.dkim19375.continuityboost.api.Booster;
+
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
+import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -28,8 +29,8 @@ public class PlayerInteractListener implements Listener {
         if (clickedItem == null) {
             return;
         }
-        Set<Booster> boosts = new HashSet<>();
-        for (Booster b : plugin.getBoostManager().getBoosts()) {
+        Set<Boost> boosts = new HashSet<>();
+        for (Boost b : plugin.getBoostManager().getBoosts()) {
             if (isSimilar(b.getBoostingItem(), clickedItem)) {
                 boosts.add(b);
             }
@@ -46,7 +47,7 @@ public class PlayerInteractListener implements Listener {
                 }
             }
         }
-        for (Booster boost : boosts) {
+        for (Boost boost : boosts) {
             plugin.getBoostManager().startBoost(boost);
         }
     }

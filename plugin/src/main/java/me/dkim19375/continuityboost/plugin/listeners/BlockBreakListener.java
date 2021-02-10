@@ -1,8 +1,9 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
 import me.dkim19375.continuityboost.api.BoostType;
-import me.dkim19375.continuityboost.api.Booster;
+
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
+import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,12 +23,12 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler()
     public void onBlockBreakEvent(BlockBreakEvent e) {
-        Booster boost = null;
+        Boost boost = null;
         if (plugin.getBoostManager().getBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER).size() < 1) {
             return;
         }
         int m = 0;
-        for (Booster b : plugin.getBoostManager().getBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER)) {
+        for (Boost b : plugin.getBoostManager().getBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER)) {
             if (b.getMultiplier() > m) {
                 m = b.getMultiplier();
                 boost = b;

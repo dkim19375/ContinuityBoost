@@ -1,6 +1,7 @@
 package me.dkim19375.continuityboost.plugin.api;
 
 import me.dkim19375.continuityboost.api.BoostType;
+
 import me.dkim19375.continuityboost.api.Booster;
 import me.dkim19375.continuityboost.api.ContinuityBoostAPI;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
@@ -60,17 +61,17 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
 
     @Override
     @Nullable
-    public Booster getBoosterByUUID(@NotNull final UUID uuid) {
+    public Booster getBoosterByUUID(@NotNull UUID uuid) {
         return null;
     }
 
     @Override
-    public void stopBoost(@NotNull final Booster booster) {
+    public void stopBoost(@NotNull final Booster Boost) {
 
     }
 
     @Override
-    public void startBoost(@NotNull final Booster booster) {
+    public void startBoost(@NotNull final Booster Boost) {
 
     }
 
@@ -80,13 +81,13 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
     }
 
     @Override
-    public void addBoost(@NotNull final Booster booster) {
+    public void addBoost(@NotNull final Booster Boost) {
 
     }
 
     @Override
     @NotNull
-    public Set<Booster> getBoostersPerType(@NotNull final BoostType type) {
+    public Set<Booster> getBoostsPerType(@NotNull final BoostType type) {
         return null;
     }
 }

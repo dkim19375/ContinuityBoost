@@ -37,5 +37,5 @@ public interface ContinuityBoostAPI {
     void addBoost(@NotNull final Booster booster);
 
     @NotNull
-    Set<Booster> getBoostersPerType(@NotNull final BoostType type);
+    Set<Booster> getBoostsPerType(@NotNull final BoostType type);
 }

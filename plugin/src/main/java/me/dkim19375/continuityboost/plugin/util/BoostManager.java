@@ -1,7 +1,7 @@
 package me.dkim19375.continuityboost.plugin.util;
 
 import me.dkim19375.continuityboost.api.BoostType;
-import me.dkim19375.continuityboost.api.Booster;
+
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
@@ -15,9 +15,9 @@ import java.util.*;
 public class BoostManager {
     private final ContinuityBoost plugin;
     @NotNull
-    private final Set<Booster> boosts = new HashSet<>();
+    private final Set<Boost> boosts = new HashSet<>();
     @NotNull
-    private final Map<Booster, Long> currentBoosts = new HashMap<>();
+    private final Map<Boost, Long> currentBoosts = new HashMap<>();
     @NotNull
     private final Set<UUID> toggledPlayers = new HashSet<>();
 
@@ -28,7 +28,7 @@ public class BoostManager {
     public void runTask() {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             final long time = System.currentTimeMillis();
-            for (Booster boost : currentBoosts.keySet()) {
+            for (Boost boost : currentBoosts.keySet()) {
                 if (currentBoosts.get(boost) == null) {
                     continue;
                 }
@@ -45,23 +45,23 @@ public class BoostManager {
     }
 
     @NotNull
-    public Set<Booster> getBoosts() {
+    public Set<Boost> getBoosts() {
         return boosts;
     }
 
-    public void saveConfigurationFile(final Booster boost) {
+    public void saveConfigurationFile(final Boost boost) {
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), boost);
     }
 
     private void removeCurrentBoost(UUID uuid) {
-        for (Booster b : currentBoosts.keySet()) {
+        for (Boost b : currentBoosts.keySet()) {
             if (b.getUniqueId().equals(uuid)) {
                 currentBoosts.remove(b);
             }
         }
     }
 
-    public void removeBoost(Booster boost) {
+    public void removeBoost(Boost boost) {
         boosts.removeIf(b -> b.getUniqueId().equals(boost.getUniqueId()));
         removeCurrentBoost(boost.getUniqueId());
         plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
@@ -69,8 +69,8 @@ public class BoostManager {
     }
 
     @Nullable
-    public Booster getBoostByUUID(UUID uuid) {
-        for (Booster boost : boosts) {
+    public Boost getBoostByUUID(UUID uuid) {
+        for (Boost boost : boosts) {
             if (boost.getUniqueId().equals(uuid)) {
                 return boost;
             }
@@ -79,14 +79,14 @@ public class BoostManager {
     }
 
     @Nullable
-    public Booster getBoostByUUID(String uuid) {
+    public Boost getBoostByUUID(String uuid) {
         final UUID uuid1;
         try {
             uuid1 = UUID.fromString(uuid);
         } catch (IllegalArgumentException e) {
             return null;
         }
-        for (Booster boost : boosts) {
+        for (Boost boost : boosts) {
             if (boost.getUniqueId().equals(uuid1)) {
                 return boost;
             }
@@ -94,7 +94,7 @@ public class BoostManager {
         return null;
     }
 
-    public void forceStopBoost(final Booster boost) {
+    public void forceStopBoost(final Boost boost) {
         if (boost.getEffect() != null) {
             Bukkit.getOnlinePlayers().forEach((player) -> {
                 if (player.getPotionEffect(boost.getEffect().getType()) != null) {
@@ -108,16 +108,16 @@ public class BoostManager {
     }
 
     public void forceStopBoost(final BoostType boostType) {
-        for (Booster boost : currentBoosts.keySet()) {
+        for (Boost boost : currentBoosts.keySet()) {
             if (boost.getType() == boostType) {
                 forceStopBoost(boost);
             }
         }
     }
 
-    public void addBoost(@NotNull final Booster boost) {
+    public void addBoost(@NotNull final Boost boost) {
         boolean similar = false;
-        for (Booster boost1 : boosts) {
+        for (Boost boost1 : boosts) {
             if (boost1.equals(boost)) {
                 similar = true;
                 break;
@@ -130,7 +130,7 @@ public class BoostManager {
         }
     }
 
-    public void startBoost(@NotNull final Booster boost) {
+    public void startBoost(@NotNull final Boost boost) {
         switch (boost.getType()) {
             case EFFECT:
                 if (boost.getEffect() == null) {
@@ -156,13 +156,13 @@ public class BoostManager {
     }
 
     @NotNull
-    public Map<Booster, Long> getCurrentBoosts() {
+    public Map<Boost, Long> getCurrentBoosts() {
         return currentBoosts;
     }
 
     public int getCurrentBoostAmount(final BoostType type) {
         int i = 0;
-        for (Booster boost : currentBoosts.keySet()) {
+        for (Boost boost : currentBoosts.keySet()) {
             if (boost.getType() == type) {
                 i++;
             }
@@ -170,9 +170,9 @@ public class BoostManager {
         return i;
     }
 
-    public Set<Booster> getBoostsPerType(final BoostType type) {
-        final Set<Booster> boosts = new HashSet<>();
-        for (Booster boost : currentBoosts.keySet()) {
+    public Set<Boost> getBoostsPerType(final BoostType type) {
+        final Set<Boost> boosts = new HashSet<>();
+        for (Boost boost : currentBoosts.keySet()) {
             if (boost.getType() == type) {
                 boosts.add(boost);
             }
