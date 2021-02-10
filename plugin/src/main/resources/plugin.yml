@@ -19,6 +19,7 @@ permissions:
   continuityboost.all:
     description: All permissions
     children:
+      - continuityboost.command
       - continuityboost.currentboosts
       - continuityboost.boosts
       - continuityboost.info
@@ -30,9 +31,14 @@ permissions:
       - continuityboost.remove.type
       - continuityboost.remove.uuid
       - continuityboost.remove.add
+      - continuityboost.add
       - continuityboost.giveitem.all
       - continuityboost.giveitem.self
       - continuityboost.giveitem.others
+      - continuityboost.toggle.self
+      - continuityboost.toggle.others
+  continuityboost.command:
+    description: Use the /continuityboost command
   continuityboost.currentboosts:
     description: See all current boosts
   continuityboost.boosts:
@@ -59,6 +65,8 @@ permissions:
     description: Remove boosts by its type
   continuityboost.remove.uuid:
     description: Remove boosts by its UUID
+  continuityboost.add:
+    description: Add/create a boost
   continuityboost.giveitem.all:
     description: Give boosts to yourself and other people
     children:
@@ -68,3 +76,7 @@ permissions:
     description: Give yourself boosts
   continuityboost.giveitem.others:
     description: Give other people boosts
+  continuityboost.toggle.self:
+    description: Toggle having boosts
+  continuityboost.toggle.others:
+    description: Toggle other people having boosts

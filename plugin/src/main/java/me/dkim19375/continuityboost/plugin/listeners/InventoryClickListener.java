@@ -1,5 +1,6 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
+import me.dkim19375.continuityboost.api.BoostType;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.entity.Villager;
@@ -24,7 +25,7 @@ public class InventoryClickListener implements Listener {
         if (!(e.getInventory().getHolder() instanceof Villager)) {
             return;
         }
-        if (plugin.getBoostManager().getBoostsPerType(Boost.BoostType.VILLAGER).size() < 1) {
+        if (plugin.getBoostManager().getBoostsPerType(BoostType.VILLAGER).size() < 1) {
             return;
         }
         ((Villager) e.getInventory().getHolder()).getRecipes().forEach(recipe -> recipe.setUses(1));

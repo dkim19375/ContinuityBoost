@@ -1,7 +1,8 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
+import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.Booster;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
-import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,9 +18,9 @@ public class PlayerExpChangeListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerExpChangeEvent(PlayerExpChangeEvent e) {
         boolean shouldMultiply = false;
-        Boost boost = null;
-        for (Boost b : plugin.getBoostManager().getCurrentBoosts().keySet()) {
-            if (b.getType() == Boost.BoostType.EXP_MULTIPLIER) {
+        Booster boost = null;
+        for (Booster b : plugin.getBoostManager().getCurrentBoosts().keySet()) {
+            if (b.getType() == BoostType.EXP_MULTIPLIER) {
                 shouldMultiply = true;
                 boost = b;
                 break;

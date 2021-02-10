@@ -1,8 +1,9 @@
 package me.dkim19375.continuityboost.plugin.util;
 
+import me.dkim19375.continuityboost.api.Booster;
+import me.dkim19375.continuityboost.api.BoostType;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class Boost implements Cloneable, ConfigurationSerializable {
+public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     private int duration;
     @NotNull
     private BoostType type;
@@ -23,11 +24,11 @@ public class Boost implements Cloneable, ConfigurationSerializable {
     private String boostMessage;
     private final UUID uuid;
     @Nullable
-    private Set<Material> appliedBlocks;
+    private final Set<Material> appliedBlocks;
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, Set<Material> appliedBlocks) {
+            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, @Nullable Set<Material> appliedBlocks) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
@@ -35,27 +36,7 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         this.effect = effect;
         this.multiplier = multiplier;
         this.uuid = uuid == null ? UUID.randomUUID() : uuid;
-    }
-
-    @SuppressWarnings("unused")
-    public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, @Nullable UUID uuid, Set<Material> appliedBlocks) {
-        this.boostingItem = boostingItem;
-        this.duration = duration;
-        this.type = type;
-        this.boostMessage = boostMessage == null ? "" : boostMessage;
-        this.effect = effect;
-        this.uuid = uuid == null ? UUID.randomUUID() : uuid;
-    }
-
-    @SuppressWarnings("unused")
-    public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable UUID uuid, Set<Material> appliedBlocks) {
-        this.boostingItem = boostingItem;
-        this.duration = duration;
-        this.type = type;
-        this.boostMessage = boostMessage == null ? "" : boostMessage;
-        this.uuid = uuid == null ? UUID.randomUUID() : uuid;
+        this.appliedBlocks = appliedBlocks;
     }
 
     @SuppressWarnings("unused")
@@ -143,7 +124,7 @@ public class Boost implements Cloneable, ConfigurationSerializable {
         this.boostMessage = boostMessage;
     }
 
-    public UUID getUniqueId() {
+    public @NotNull UUID getUniqueId() {
         return uuid;
     }
 
@@ -164,46 +145,6 @@ public class Boost implements Cloneable, ConfigurationSerializable {
     @Nullable
     public Set<Material> getAppliedBlocks() {
         return appliedBlocks;
-    }
-
-    @SuppressWarnings("unused")
-    public enum BoostType implements ConfigurationSerializable {
-        EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, VILLAGER;
-
-        static {
-            ConfigurationSerialization.registerClass(BoostType.class);
-        }
-
-        @Nullable
-        public static BoostType match(final String s) {
-            if (s == null) {
-                return null;
-            }
-            switch (s.toUpperCase(Locale.ENGLISH)) {
-                case "EXP_MULTIPLIER":
-                    return EXP_MULTIPLIER;
-                case "ITEM_DROP_MULTIPLIER":
-                    return ITEM_DROP_MULTIPLIER;
-                case "EFFECT":
-                    return EFFECT;
-                case "VILLAGER":
-                    return VILLAGER;
-                default:
-                    return null;
-            }
-        }
-
-        @NotNull
-        @Override
-        public Map<String, Object> serialize() {
-            Map<String, Object> map = new HashMap<>();
-            map.put("type", name());
-            return map;
-        }
-
-        public static BoostType deserialize(@NotNull Map<String, Object> map) {
-            return BoostType.match((String) map.get("type"));
-        }
     }
 
     @Override

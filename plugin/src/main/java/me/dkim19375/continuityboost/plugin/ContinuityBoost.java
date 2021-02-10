@@ -1,5 +1,7 @@
 package me.dkim19375.continuityboost.plugin;
 
+import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.Booster;
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
 import me.dkim19375.continuityboost.plugin.listeners.BlockBreakListener;
@@ -60,7 +62,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
             boostManager.forceSave();
         }
 
-        for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
+        for (final Booster boost : new HashSet<>(boostManager.getBoosts())) {
             if (boostsFile.getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
                 boostManager.removeBoost(boost);
             }
@@ -79,7 +81,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         }
         boostManager.runTask();
         ConfigurationSerialization.registerClass(Boost.class);
-        ConfigurationSerialization.registerClass(Boost.BoostType.class);
+        ConfigurationSerialization.registerClass(BoostType.class);
         boostsFile = new ConfigFile(this, "boosts.yml");
         command.setTabCompleter(new TabCompletionHandler(this));
         getServer().getPluginManager().registerEvents(new PlayerExpChangeListener(this), this);
