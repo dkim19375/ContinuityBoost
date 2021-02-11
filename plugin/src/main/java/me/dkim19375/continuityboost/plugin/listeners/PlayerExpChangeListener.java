@@ -18,6 +18,9 @@ public class PlayerExpChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerExpChangeEvent(PlayerExpChangeEvent e) {
+        if (!plugin.getBoostManager().isToggled(e.getPlayer())) {
+            return;
+        }
         boolean shouldMultiply = false;
         Boost boost = null;
         for (Boost b : plugin.getBoostManager().getCurrentBoosts().keySet()) {

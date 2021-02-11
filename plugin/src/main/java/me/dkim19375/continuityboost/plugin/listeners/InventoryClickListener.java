@@ -19,6 +19,9 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClickEvent(InventoryClickEvent e) {
+        if (!plugin.getBoostManager().isToggled(e.getWhoClicked().getUniqueId())) {
+            return;
+        }
         if (!(e.getInventory().getType() == InventoryType.MERCHANT)) {
             return;
         }

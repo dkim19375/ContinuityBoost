@@ -5,6 +5,7 @@ import me.dkim19375.continuityboost.api.BoostType;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -42,19 +43,41 @@ public class BlockBreakListener implements Listener {
                 return;
             }
         }
+        if (e.getPlayer().getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH)) {
+            return;
+        }
         e.setDropItems(false);
         final List<ItemStack> original = new ArrayList<>(e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
         final List<ItemStack> drops = new ArrayList<>();
         for (int i = 0; i < boost.getMultiplier(); i++) {
-            for (ItemStack ignored : original) {
-                drops.addAll(e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
+            drops.addAll(original);
+        }
+        int iron = 0;
+        int gold = 0;
+        for (ItemStack item : drops) {
+            if (item.getType() == Material.IRON_ORE) {
+                iron++;
             }
+            if (item.getType() == Material.GOLD_ORE) {
+                gold++;
+            }
+        }
+        drops.removeIf(this::isIronOrGold);
+        for (int i = 0; i < iron; i++) {
+            drops.add(new ItemStack(Material.IRON_INGOT));
+        }
+        for (int i = 0; i < gold; i++) {
+            drops.add(new ItemStack(Material.GOLD_INGOT));
         }
         for (ItemStack item : drops) {
             if (e.getBlock().getLocation().getWorld() == null) {
                 continue;
             }
-            e.getBlock().getLocation().getWorld().dropItemNaturally(e.getBlock().getLocation(), item);
+            e.getBlock().getLocation().getWorld().dropItem(e.getBlock().getLocation(), item);
         }
+    }
+
+    private boolean isIronOrGold(ItemStack item) {
+        return item.getType() == Material.IRON_ORE || item.getType() == Material.GOLD_ORE;
     }
 }

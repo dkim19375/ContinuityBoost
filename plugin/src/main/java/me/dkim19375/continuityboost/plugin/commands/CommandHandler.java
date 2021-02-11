@@ -24,6 +24,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandHandler implements CommandExecutor {
     private static final String NO_PERMISSION = ChatColor.RED + "You do not have permission to run this command!";
@@ -150,6 +151,10 @@ public class CommandHandler implements CommandExecutor {
                 try {
                     sender.sendMessage(ChatColor.GOLD + "Info:");
                     sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
+                    sender.sendMessage(ChatColor.GOLD + "Multiplier: " + ChatColor.AQUA + boost.getMultiplier());
+                    if (boost.getType() == BoostType.ITEM_DROP_MULTIPLIER) {
+                        sender.sendMessage(ChatColor.GOLD + "Applied items: " + ChatColor.AQUA + (boost.getAppliedBlocks() == null ? "ALL" : combine(boost.getAppliedBlocks())));
+                    }
                     if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
                         final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
                         final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
@@ -322,7 +327,10 @@ public class CommandHandler implements CommandExecutor {
                 final PotionEffectType effectType = PotionEffectType.getByName(args[4]);
                 final Set<Material> selectedMaterials = new HashSet<>();
                 final Set<String> invalidMaterials = new HashSet<>();
-                if (args[4].contains(",")) {
+                boolean all = false;
+                if (args[4].contains("*")) {
+                    all = true;
+                } else if (args[4].contains(",")) {
                     for (String s : args[4].split(",")) {
                         final Material mat = Material.matchMaterial(s.toUpperCase());
                         if (mat == null) {
@@ -384,7 +392,7 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) iMeta).setDamage(0);
                             iAdder.setItemMeta(iMeta);
                         }
-                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, null, selectedMaterials);
+                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, null, all ? null : selectedMaterials);
                         plugin.getBoostManager().addBoost(newB);
                         boostUUID = newB.getUniqueId();
                         break;
@@ -468,11 +476,11 @@ public class CommandHandler implements CommandExecutor {
                     final Player togglePlayer = (Player) sender;
                     final boolean toggled = plugin.getBoostManager().togglePlayer(togglePlayer.getUniqueId());
                     if (toggled) {
-                        sender.sendMessage(applyColors("&2&lBoost &8&l[&a✓&8&l]"));
+                        sender.sendMessage(applyColors("&6&lGlobal Boost &7&l[&a✔&7&l]"));
                         giveBoostToggled(togglePlayer);
                         return true;
                     }
-                    sender.sendMessage(applyColors("&2&lBoost &8&l[&c✕&8&l]"));
+                    sender.sendMessage(applyColors("&6&lGlobal Boost &7&l[&c✕&7&l]"));
                     for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(BoostType.EFFECT)) {
                         if (toggleBoost.getEffect() != null) {
                             togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
@@ -492,12 +500,12 @@ public class CommandHandler implements CommandExecutor {
                 final boolean toggled = plugin.getBoostManager().togglePlayer(togglePlayer.getUniqueId());
                 if (toggled) {
                     sender.sendMessage(applyColors("&6Successfully toggled their boost on!"));
-                    togglePlayer.sendMessage(applyColors("&2&lBoost &8&l[&a✓&8&l]"));
+                    togglePlayer.sendMessage(applyColors("&6&lGlobal Boost &7&l[&a✔&7&l]"));
                     giveBoostToggled(togglePlayer);
                     return true;
                 }
                 sender.sendMessage(ChatColor.GOLD + "&6You have now toggled off the boosts!");
-                togglePlayer.sendMessage(applyColors("&2&lBoost &8&l[&c✕&8&l]"));
+                togglePlayer.sendMessage(applyColors("&6&lGlobal Boost &7&l[&c✕&7&l]"));
                 for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(BoostType.EFFECT)) {
                     if (toggleBoost.getEffect() != null) {
                         togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
@@ -542,6 +550,23 @@ public class CommandHandler implements CommandExecutor {
             return;
         }
         sender.sendMessage(ChatColor.GREEN + "- " + boost.getUniqueId().toString());
+    }
+
+    private String combine(Set<Material> list) {
+        return combineStrings(list.stream().map(Material::name).collect(Collectors.toList()));
+    }
+
+    private String combineStrings(List<String> list) {
+        StringBuilder s = new StringBuilder();
+        int i = 1;
+        for (String string : list) {
+            s.append(string);
+            if (i < list.size()) {
+                s.append(", ");
+            }
+            i++;
+        }
+        return s.toString();
     }
 
     private void showHelp(CommandSender sender, String label) {

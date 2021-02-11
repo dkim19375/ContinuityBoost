@@ -22,10 +22,11 @@ public class AppliedBlocksHolder implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         final Map<String, Object> map = new HashMap<>();
-        map.put("materials", appliedBlocksString);
+        map.put("materials", new ArrayList<>(appliedBlocksString));
         return map;
     }
 
+    @SuppressWarnings("unused")
     public static AppliedBlocksHolder deserialize(@NotNull final Map<String, Object> map) {
         final Set<Material> list = new HashSet<>();
         final Set<String> stringList;
