@@ -101,10 +101,12 @@ public class BoostManager {
                 if (player == null) {
                     return;
                 }
-                if (player.getPotionEffect(boost.getEffect().getType()) != null) {
-                    if (Objects.requireNonNull(player.getPotionEffect(boost.getEffect().getType())).equals(boost.getEffect())) {
-                        player.removePotionEffect(boost.getEffect().getType());
-                    }
+                final PotionEffect effect = player.getPotionEffect(boost.getEffect().getType());
+                if (effect == null) {
+                    return;
+                }
+                if (effect.equals(boost.getEffect())) {
+                    player.removePotionEffect(boost.getEffect().getType());
                 }
             });
         }
