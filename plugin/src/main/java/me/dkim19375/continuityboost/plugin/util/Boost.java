@@ -58,16 +58,20 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks == null ? null : appliedBlocks.getAppliedBlocks());
     }
 
+    @Override
     public int getDuration() {
         return duration;
     }
 
     @SuppressWarnings("unused")
+    @Override
     public void setDuration(int duration) {
         this.duration = duration;
     }
 
-    public @NotNull BoostType getType() {
+    @Override
+    @NotNull
+    public BoostType getType() {
         return type;
     }
 
@@ -76,43 +80,55 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         this.type = type;
     }
 
-    public @Nullable PotionEffect getEffect() {
+    @Override
+    @Nullable
+    public PotionEffect getEffect() {
         return effect;
     }
 
     @SuppressWarnings("unused")
+    @Override
     public void setEffect(@Nullable PotionEffect effect) {
         this.effect = effect;
     }
 
-    public @NotNull ItemStack getBoostingItem() {
+    @Override
+    @NotNull
+    public ItemStack getBoostingItem() {
         return boostingItem;
     }
 
     @SuppressWarnings("unused")
+    @Override
     public void setBoostingItem(@NotNull ItemStack boostingItem) {
         this.boostingItem = boostingItem;
     }
 
+    @Override
     public int getMultiplier() {
         return multiplier;
     }
 
     @SuppressWarnings("unused")
+    @Override
     public void setMultiplier(int multiplier) {
         this.multiplier = multiplier;
     }
 
     @NotNull
+    @Override
     public String getBoostMessage() {
         return boostMessage;
     }
 
+    @Override
     public void setBoostMessage(@NotNull String boostMessage) {
         this.boostMessage = boostMessage;
     }
 
-    public @NotNull UUID getUniqueId() {
+    @Override
+    @NotNull
+    public UUID getUniqueId() {
         return uuid;
     }
 
@@ -132,8 +148,14 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     }
 
     @Nullable
+    @Override
     public Set<Material> getAppliedBlocks() {
         return appliedBlocks;
+    }
+
+    @Override
+    public void setAppliedBlocks(@Nullable Set<Material> blocks) {
+        appliedBlocks = blocks;
     }
 
     @Override
