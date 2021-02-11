@@ -4,6 +4,7 @@ import me.dkim19375.continuityboost.api.BoostType;
 import me.dkim19375.continuityboost.api.Booster;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +26,12 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     private final UUID uuid;
     @Nullable
     private Set<Material> appliedBlocks;
+    @Nullable
+    private Set<EntityType> appliedEntities;
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, @Nullable Set<Material> appliedBlocks) {
+            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
@@ -37,6 +40,7 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         this.multiplier = multiplier;
         this.uuid = uuid == null ? UUID.randomUUID() : uuid;
         this.appliedBlocks = appliedBlocks;
+        this.appliedEntities = appliedEntities;
     }
 
     @SuppressWarnings("unused")
@@ -51,11 +55,13 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         final int multiplier = (int) map.get("multiplier");
         final String boostMessage = (String) map.get("boost-message");
         final UUID uuid = UUID.fromString((String) map.get("uuid"));
-        AppliedBlocksHolder appliedBlocks = null;
+        Set<Material> appliedBlocks = null;
+        Set<EntityType> appliedEntities = null;
         try {
-            appliedBlocks = (AppliedBlocksHolder) map.get("applied-blocks");
+            appliedBlocks = ((AppliedHolder) map.get("applied")).getAppliedBlocks();
+            appliedEntities = ((AppliedHolder) map.get("applied")).getAppliedEntities();
         } catch (Exception ignored) {}
-        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks == null ? null : appliedBlocks.getAppliedBlocks());
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks, appliedEntities);
     }
 
     @Override
@@ -143,7 +149,7 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         map.put("multiplier", multiplier);
         map.put("boost-message", boostMessage);
         map.put("uuid", uuid.toString());
-        map.put("applied-blocks", appliedBlocks == null ? null : new AppliedBlocksHolder(appliedBlocks));
+        map.put("applied", new AppliedHolder(appliedBlocks, appliedEntities));
         return map;
     }
 
@@ -176,5 +182,14 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     @Override
     public int hashCode() {
         return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, uuid, appliedBlocks);
+    }
+
+    @Nullable
+    public Set<EntityType> getAppliedEntities() {
+        return appliedEntities;
+    }
+
+    public void setAppliedEntities(@Nullable Set<EntityType> appliedEntities) {
+        this.appliedEntities = appliedEntities;
     }
 }

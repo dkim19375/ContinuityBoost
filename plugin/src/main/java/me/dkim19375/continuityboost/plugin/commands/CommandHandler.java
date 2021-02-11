@@ -1,7 +1,6 @@
 package me.dkim19375.continuityboost.plugin.commands;
 
 import me.dkim19375.continuityboost.api.BoostType;
-
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.dkim19375core.NumberUtils;
@@ -15,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -22,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -153,7 +154,12 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
                     sender.sendMessage(ChatColor.GOLD + "Multiplier: " + ChatColor.AQUA + boost.getMultiplier());
                     if (boost.getType() == BoostType.ITEM_DROP_MULTIPLIER) {
-                        sender.sendMessage(ChatColor.GOLD + "Applied items: " + ChatColor.AQUA + (boost.getAppliedBlocks() == null ? "ALL" : combine(boost.getAppliedBlocks())));
+                        sender.sendMessage(ChatColor.GOLD + "Applied items: " + ChatColor.AQUA + (boost.getAppliedBlocks() == null
+                                ? "ALL" : combine(boost.getAppliedBlocks())));
+                    }
+                    if (boost.getType() == BoostType.ENTITY_DROP_MULTIPLIER) {
+                        sender.sendMessage(ChatColor.GOLD + "Applied entities: " + ChatColor.AQUA + (boost.getAppliedEntities() == null
+                                ? "ALL" : combineEntities(boost.getAppliedEntities())));
                     }
                     if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
                         final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
@@ -355,6 +361,36 @@ public class CommandHandler implements CommandExecutor {
                         invalidMaterials.add(args[4]);
                     }
                 }
+                final Set<EntityType> selectedEntities = new HashSet<>();
+                final Set<String> invalidEntities = new HashSet<>();
+                boolean allEntities = false;
+                if (args[4].contains("*")) {
+                    allEntities = true;
+                } else if (args[4].contains(",")) {
+                    for (String s : args[4].split(",")) {
+                        final EntityType entityType = getType(s);
+                        if (entityType == null) {
+                            invalidEntities.add(s);
+                            continue;
+                        }
+                        if (entityType.isAlive()) {
+                            selectedEntities.add(entityType);
+                            continue;
+                        }
+                        invalidEntities.add(s);
+                    }
+                } else {
+                    final EntityType entityType = getType(args[4]);
+                    if (entityType != null) {
+                        if (entityType.isAlive()) {
+                            selectedEntities.add(entityType);
+                        } else {
+                            invalidMaterials.add(args[4]);
+                        }
+                    } else {
+                        invalidEntities.add(args[4]);
+                    }
+                }
                 final String boostMessage;
                 UUID boostUUID;
                 switch (type) {
@@ -372,7 +408,7 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) eMeta).setDamage(0);
                             eAdder.setItemMeta(eMeta);
                         }
-                        Boost newBoost = new Boost(eAdder, duration, type, boostMessage, effect, multiplier, null, null);
+                        Boost newBoost = new Boost(eAdder, duration, type, boostMessage, effect, multiplier, null, null, null);
                         plugin.getBoostManager().addBoost(newBoost);
                         boostUUID = newBoost.getUniqueId();
                         break;
@@ -392,9 +428,29 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) iMeta).setDamage(0);
                             iAdder.setItemMeta(iMeta);
                         }
-                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, null, all ? null : selectedMaterials);
+                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, null, all ? null : selectedMaterials, null);
                         plugin.getBoostManager().addBoost(newB);
                         boostUUID = newB.getUniqueId();
+                        break;
+                    case ENTITY_DROP_MULTIPLIER:
+                        if (invalidEntities.size() > 0) {
+                            sender.sendMessage(ChatColor.RED + "The following were not valid Entities:");
+                            for (String s : invalidEntities) {
+                                sender.sendMessage(ChatColor.GOLD + s);
+                            }
+                            return true;
+                        }
+                        boostMessage = getRestArgs(args, 5);
+                        final ItemStack enAdder = new ItemStack(player.getInventory().getItemInMainHand());
+                        enAdder.setAmount(1);
+                        final ItemMeta enMeta = enAdder.getItemMeta();
+                        if (enMeta != null) {
+                            ((Damageable) enMeta).setDamage(0);
+                            enAdder.setItemMeta(enMeta);
+                        }
+                        Boost newE = new Boost(enAdder, duration, type, boostMessage, null, multiplier, null, allEntities ? null : null, selectedEntities);
+                        plugin.getBoostManager().addBoost(newE);
+                        boostUUID = newE.getUniqueId();
                         break;
                     default:
                         boostMessage = getRestArgs(args, 4);
@@ -405,7 +461,7 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) dMeta).setDamage(0);
                             dAdder.setItemMeta(dMeta);
                         }
-                        Boost nBoost = new Boost(dAdder, duration, type, boostMessage, null, multiplier, null, null);
+                        Boost nBoost = new Boost(dAdder, duration, type, boostMessage, null, multiplier, null, null, null);
                         plugin.getBoostManager().addBoost(nBoost);
                         boostUUID = nBoost.getUniqueId();
                         break;
@@ -481,7 +537,7 @@ public class CommandHandler implements CommandExecutor {
                         return true;
                     }
                     sender.sendMessage(applyColors("&6&lGlobal Boost &7&l[&c✕&7&l]"));
-                    for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(BoostType.EFFECT)) {
+                    for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
                         if (toggleBoost.getEffect() != null) {
                             togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
                         }
@@ -506,7 +562,7 @@ public class CommandHandler implements CommandExecutor {
                 }
                 sender.sendMessage(ChatColor.GOLD + "&6You have now toggled off the boosts!");
                 togglePlayer.sendMessage(applyColors("&6&lGlobal Boost &7&l[&c✕&7&l]"));
-                for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(BoostType.EFFECT)) {
+                for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
                     if (toggleBoost.getEffect() != null) {
                         togglePlayer.removePotionEffect(toggleBoost.getEffect().getType());
                     }
@@ -519,7 +575,7 @@ public class CommandHandler implements CommandExecutor {
     }
 
     private void giveBoostToggled(Player togglePlayer) {
-        for (Boost toggleBoost : plugin.getBoostManager().getBoostsPerType(BoostType.EFFECT)) {
+        for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
             if (toggleBoost.getEffect() != null) {
                 final long endTime = plugin.getBoostManager().getCurrentBoosts().get(toggleBoost) + (toggleBoost.getDuration() * 1000L);
                 final long timeLeft = ((endTime - System.currentTimeMillis()) / 1000) * 20;
@@ -556,6 +612,10 @@ public class CommandHandler implements CommandExecutor {
         return combineStrings(list.stream().map(Material::name).collect(Collectors.toList()));
     }
 
+    private String combineEntities(Set<EntityType> list) {
+        return combineStrings(list.stream().map(EntityType::name).collect(Collectors.toList()));
+    }
+
     private String combineStrings(List<String> list) {
         StringBuilder s = new StringBuilder();
         int i = 1;
@@ -578,11 +638,21 @@ public class CommandHandler implements CommandExecutor {
         sendFormatted(sender, label, "reload", "Reload the configuration files");
         sendFormatted(sender, label, "stop <type|all|uuid>", "Stop all boosts, or a specific type");
         sendFormatted(sender, label, "remove <type|all|uuid>", "Remove all boosts, or a specific type");
-        sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT), or Material,Material,Material etc> <boost message>",
+        sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT),  " +
+                        "Material,Material,Material, or EntityType,EntityType etc> <boost message>",
                 "Add the current item");
         //noinspection SpellCheckingInspection
         sendFormatted(sender, label, "giveitem <uuid> [player]", "Give the item to a player");
         sendFormatted(sender, label, "toggle [player]", "Toggle the boost for a player");
+    }
+
+    @Nullable
+    private EntityType getType(String s) {
+        try {
+            return EntityType.valueOf(s.toUpperCase());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getRestArgs(final String[] args, final int index) {

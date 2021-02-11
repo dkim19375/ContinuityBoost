@@ -28,7 +28,7 @@ public class InventoryClickListener implements Listener {
         if (!(e.getInventory().getHolder() instanceof Villager)) {
             return;
         }
-        if (plugin.getBoostManager().getBoostsPerType(BoostType.VILLAGER).size() < 1) {
+        if (plugin.getBoostManager().getCurrentBoostsPerType(BoostType.VILLAGER).size() < 1) {
             return;
         }
         ((Villager) e.getInventory().getHolder()).getRecipes().forEach(recipe -> recipe.setUses(1));

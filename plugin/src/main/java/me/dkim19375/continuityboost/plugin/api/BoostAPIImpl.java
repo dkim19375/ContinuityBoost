@@ -6,6 +6,10 @@ import me.dkim19375.continuityboost.api.Booster;
 import me.dkim19375.continuityboost.api.ContinuityBoostAPI;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,64 +34,94 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
     @Override
     @NotNull
     public Set<Booster> getCurrentBoosts() {
-        return null;
+        final Set<Boost> boosts = plugin.getBoostManager().getCurrentBoosts().keySet();
+        return new HashSet<>(boosts);
     }
 
     @Override
     @NotNull
     public Set<UUID> getToggedPlayers() {
-        return null;
+        return new HashSet<>(plugin.getBoostManager().getToggledPlayers());
     }
 
     @Override
     public void togglePlayer(@NotNull final UUID player) {
-
+        plugin.getBoostManager().togglePlayer(player);
     }
 
     @Override
     public void togglePlayerOn(@NotNull final UUID player) {
-
+        plugin.getBoostManager().togglePlayerOn(player);
     }
 
     @Override
     public void togglePlayerOff(@NotNull final UUID player) {
-
+        plugin.getBoostManager().togglePlayerOff(player);
     }
 
     @Override
     public boolean isToggled(@NotNull final UUID player) {
-        return false;
+        return plugin.getBoostManager().isToggled(player);
     }
 
     @Override
     @Nullable
     public Booster getBoosterByUUID(@NotNull UUID uuid) {
-        return null;
+        return plugin.getBoostManager().getBoostByUUID(uuid);
     }
 
     @Override
-    public void stopBoost(@NotNull final Booster Boost) {
-
+    public void stopBoost(@NotNull final Booster boost) {
+        final Boost boost1 = plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
+        if (boost1 != null) {
+            plugin.getBoostManager().forceStopBoost(boost1);
+        }
     }
 
     @Override
-    public void startBoost(@NotNull final Booster Boost) {
-
+    public void startBoost(@NotNull final Booster boost) {
+        final Boost boost1 = plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
+        if (boost1 != null) {
+            plugin.getBoostManager().startBoost(boost1);
+        }
     }
 
     @Override
     public void stopBoost(@NotNull final BoostType type) {
-
+        plugin.getBoostManager().forceStopBoost(type);
     }
 
     @Override
-    public void addBoost(@NotNull final Booster Boost) {
-
+    public @NotNull Set<Booster> getBoostsPerType(@NotNull BoostType type) {
+        Set<Booster> boosts = new HashSet<>();
+        for (Booster boost : new HashSet<>(plugin.getBoostManager().getBoosts())) {
+            if (boost.getType() == type) {
+                boosts.add(boost);
+            }
+        }
+        return boosts;
     }
 
     @Override
     @NotNull
-    public Set<Booster> getBoostsPerType(@NotNull final BoostType type) {
-        return null;
+    public Set<Booster> getCurrentBoostsPerType(@NotNull final BoostType type) {
+        return new HashSet<>(plugin.getBoostManager().getCurrentBoostsPerType(type));
+    }
+
+    @Override
+    public long getBoostStartTime(Booster booster) {
+        final long endTime = plugin.getBoostManager().getCurrentBoosts().get(convert(booster)) + (convert(booster).getDuration() * 1000L);
+        return endTime - System.currentTimeMillis();
+    }
+
+    @Override
+    @NotNull
+    public Booster createBoost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
+            , @Nullable PotionEffect effect, int multiplier, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, null, appliedBlocks, appliedEntities);
+    }
+
+    private Boost convert(Booster boost) {
+        return plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
     }
 }

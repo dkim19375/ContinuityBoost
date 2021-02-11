@@ -1,15 +1,12 @@
 package me.dkim19375.continuityboost.plugin;
 
+import me.dkim19375.continuityboost.api.BoostAPIProvider;
 import me.dkim19375.continuityboost.api.BoostType;
-
+import me.dkim19375.continuityboost.plugin.api.BoostAPIImpl;
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
-import me.dkim19375.continuityboost.plugin.listeners.BlockBreakListener;
-import me.dkim19375.continuityboost.plugin.listeners.InventoryClickListener;
-import me.dkim19375.continuityboost.plugin.listeners.PlayerExpChangeListener;
-import me.dkim19375.continuityboost.plugin.listeners.PlayerInteractListener;
-import me.dkim19375.continuityboost.plugin.listeners.PlayerJoinListener;
-import me.dkim19375.continuityboost.plugin.util.AppliedBlocksHolder;
+import me.dkim19375.continuityboost.plugin.listeners.*;
+import me.dkim19375.continuityboost.plugin.util.AppliedHolder;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.continuityboost.plugin.util.BoostManager;
 import me.dkim19375.continuityboost.plugin.util.LoggingUtils;
@@ -27,6 +24,11 @@ import java.util.logging.Level;
 public class ContinuityBoost extends CoreJavaPlugin {
     private final BoostManager boostManager = new BoostManager(this);
     private ConfigFile boostsFile;
+
+    @Override
+    public void onLoad() {
+        BoostAPIProvider.setApi(new BoostAPIImpl(this));
+    }
 
     @Override
     public void onEnable() {
@@ -82,7 +84,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         boostManager.runTask();
         ConfigurationSerialization.registerClass(Boost.class);
         ConfigurationSerialization.registerClass(BoostType.class);
-        ConfigurationSerialization.registerClass(AppliedBlocksHolder.class);
+        ConfigurationSerialization.registerClass(AppliedHolder.class);
         boostsFile = new ConfigFile(this, "boosts.yml");
         command.setTabCompleter(new TabCompletionHandler(this));
         getServer().getPluginManager().registerEvents(new PlayerExpChangeListener(this), this);
@@ -90,6 +92,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        getServer().getPluginManager().registerEvents(new EntityDeathListener(this), this);
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             final Set<String> materials = new HashSet<>();
             for (Material material : Material.values()) {

@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum BoostType implements ConfigurationSerializable {
-    EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, VILLAGER;
+    EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, VILLAGER, ENTITY_DROP_MULTIPLIER;
 
     static {
         ConfigurationSerialization.registerClass(BoostType.class);
@@ -30,6 +30,8 @@ public enum BoostType implements ConfigurationSerializable {
                 return EFFECT;
             case "VILLAGER":
                 return VILLAGER;
+            case "ENTITY_DROP_MULTIPLIER":
+                return ENTITY_DROP_MULTIPLIER;
             default:
                 return null;
         }

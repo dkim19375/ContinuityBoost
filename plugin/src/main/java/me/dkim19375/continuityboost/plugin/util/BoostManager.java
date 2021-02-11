@@ -96,7 +96,11 @@ public class BoostManager {
 
     public void forceStopBoost(final Boost boost) {
         if (boost.getEffect() != null) {
-            Bukkit.getOnlinePlayers().forEach((player) -> {
+            toggledPlayers.forEach((uuid) -> {
+                final Player player = Bukkit.getPlayer(uuid);
+                if (player == null) {
+                    return;
+                }
                 if (player.getPotionEffect(boost.getEffect().getType()) != null) {
                     if (Objects.requireNonNull(player.getPotionEffect(boost.getEffect().getType())).equals(boost.getEffect())) {
                         player.removePotionEffect(boost.getEffect().getType());
@@ -146,6 +150,7 @@ public class BoostManager {
                 break;
             case EXP_MULTIPLIER:
             case ITEM_DROP_MULTIPLIER:
+            case ENTITY_DROP_MULTIPLIER:
             case VILLAGER:
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
@@ -170,7 +175,7 @@ public class BoostManager {
         return i;
     }
 
-    public Set<Boost> getBoostsPerType(final BoostType type) {
+    public Set<Boost> getCurrentBoostsPerType(final BoostType type) {
         final Set<Boost> boosts = new HashSet<>();
         for (Boost boost : currentBoosts.keySet()) {
             if (boost.getType() == type) {

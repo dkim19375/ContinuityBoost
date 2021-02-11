@@ -25,11 +25,11 @@ public class BlockBreakListener implements Listener {
     @EventHandler()
     public void onBlockBreakEvent(BlockBreakEvent e) {
         Boost boost = null;
-        if (plugin.getBoostManager().getBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER).size() < 1) {
+        if (plugin.getBoostManager().getCurrentBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER).size() < 1) {
             return;
         }
         int m = 0;
-        for (Boost b : plugin.getBoostManager().getBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER)) {
+        for (Boost b : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER)) {
             if (b.getMultiplier() > m) {
                 m = b.getMultiplier();
                 boost = b;

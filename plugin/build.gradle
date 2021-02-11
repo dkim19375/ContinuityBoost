@@ -1,3 +1,7 @@
+shadowJar {
+    relocate 'me.dkim19375.dkim19375core', 'me.dkim19375.continuityboost.dkim19375core'
+}
+
 repositories {
     maven { url = 'https://jitpack.io' }
 }
