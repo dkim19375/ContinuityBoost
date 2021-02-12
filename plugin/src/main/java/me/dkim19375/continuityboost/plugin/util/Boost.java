@@ -23,7 +23,8 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
     private int multiplier;
     @NotNull
     private String boostMessage;
-    private final UUID uuid;
+    @NotNull
+    private final String name;
     @Nullable
     private Set<Material> appliedBlocks;
     @Nullable
@@ -31,14 +32,14 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
 
     @SuppressWarnings("unused")
     public Boost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable UUID uuid, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
+            , @Nullable PotionEffect effect, int multiplier, @NotNull String name, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
         this.boostingItem = boostingItem;
         this.duration = duration;
         this.type = type;
         this.boostMessage = boostMessage == null ? "" : boostMessage;
         this.effect = effect;
         this.multiplier = multiplier;
-        this.uuid = uuid == null ? UUID.randomUUID() : uuid;
+        this.name = name;
         this.appliedBlocks = appliedBlocks;
         this.appliedEntities = appliedEntities;
     }
@@ -54,14 +55,14 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         final ItemStack boostingItem = (ItemStack) map.get("item");
         final int multiplier = (int) map.get("multiplier");
         final String boostMessage = (String) map.get("boost-message");
-        final UUID uuid = UUID.fromString((String) map.get("uuid"));
+        final String name = (String) map.get("name");
         Set<Material> appliedBlocks = null;
         Set<EntityType> appliedEntities = null;
         try {
             appliedBlocks = ((AppliedHolder) map.get("applied")).getAppliedBlocks();
             appliedEntities = ((AppliedHolder) map.get("applied")).getAppliedEntities();
         } catch (Exception ignored) {}
-        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, uuid, appliedBlocks, appliedEntities);
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, name, appliedBlocks, appliedEntities);
     }
 
     @Override
@@ -134,8 +135,8 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
 
     @Override
     @NotNull
-    public UUID getUniqueId() {
-        return uuid;
+    public String getName() {
+        return name;
     }
 
     @NotNull
@@ -148,7 +149,7 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         map.put("item", boostingItem);
         map.put("multiplier", multiplier);
         map.put("boost-message", boostMessage);
-        map.put("uuid", uuid.toString());
+        map.put("name", name);
         map.put("applied", new AppliedHolder(appliedBlocks, appliedEntities));
         return map;
     }
@@ -169,19 +170,12 @@ public class Boost implements Cloneable, ConfigurationSerializable, Booster {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Boost boost = (Boost) o;
-        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage) && uuid.equals(boost.uuid) && Objects.equals(appliedBlocks, boost.appliedBlocks);
-    }
-
-    public boolean isSimilar(Boost boost) {
-        if (equals(boost)) {
-            return true;
-        }
-        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage) && Objects.equals(appliedBlocks, boost.appliedBlocks);
+        return duration == boost.duration && multiplier == boost.multiplier && type == boost.type && Objects.equals(effect, boost.effect) && boostingItem.equals(boost.boostingItem) && boostMessage.equals(boost.boostMessage) && name.equals(boost.name) && Objects.equals(appliedBlocks, boost.appliedBlocks);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, uuid, appliedBlocks);
+        return Objects.hash(duration, type, effect, boostingItem, multiplier, boostMessage, name, appliedBlocks);
     }
 
     @Nullable

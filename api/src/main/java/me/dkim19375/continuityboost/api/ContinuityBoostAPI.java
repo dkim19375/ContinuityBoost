@@ -52,11 +52,11 @@ public interface ContinuityBoostAPI {
     boolean isToggled(@NotNull final UUID player);
 
     /**
-     * @param uuid The booster's UUID
+     * @param name The booster's name
      * @return The Booster of the UUID
      */
     @Nullable
-    Booster getBoosterByUUID(@NotNull final UUID uuid);
+    Booster getBoosterByUUID(@NotNull final String name);
 
     /**
      * @param booster The booster to stop
@@ -101,13 +101,16 @@ public interface ContinuityBoostAPI {
      *                     use {@link Booster#getBoostMessage()} to get the duration
      * @param effect The potion effect that will be applied on boost if the type is {@link BoostType#EFFECT},
      *               use {@link Booster#getEffect()} to get the effect
+     * @param name The name of the boost
      * @param multiplier The multiplier/amplifier of the boost, doesn't apply to {@link BoostType#VILLAGER},
      *                   use {@link Booster#getMultiplier()} to get the multiplier
      * @param appliedBlocks The blocks that will be affected with {@link BoostType#ITEM_DROP_MULTIPLIER},
      *                      use {@link Booster#getAppliedBlocks()} to get the applied blocks
+     * @param appliedEntities The entities that will be affected with {@link BoostType#ITEM_DROP_MULTIPLIER},
+     *                      use {@link Booster#getAppliedEntities()} to get the applied blocks
      * @return the booster created
      */
     @NotNull
     Booster createBoost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities);
+            , @Nullable PotionEffect effect, int multiplier, @NotNull String name, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities);
 }

@@ -32,7 +32,7 @@ public class CommandHandler implements CommandExecutor {
     private static final String TOO_MANY_ARGS = ChatColor.RED + "Too many arguments!";
     private static final String LITTLE_ARGS = ChatColor.RED + "Not enough arguments!";
     private static final String MUST_BE_PLAYER = ChatColor.RED + "You must be a player!";
-    private static final String INVALID_UUID = ChatColor.RED + "Invalid UUID!";
+    private static final String INVALID_NAME = ChatColor.RED + "Invalid name!";
     private final ContinuityBoost plugin;
 
     public CommandHandler(ContinuityBoost plugin) {
@@ -122,11 +122,11 @@ public class CommandHandler implements CommandExecutor {
                         sender.sendMessage(ChatColor.GREEN + "Tip: You can click one of the UUIDs to copy it! (The uuid will show in the chat)");
                     }
                 }
-                Set<UUID> uuids = new HashSet<>();
+                Set<String> names = new HashSet<>();
                 for (Boost boost : plugin.getBoostManager().getBoosts()) {
-                    if (!uuids.contains(boost.getUniqueId())) {
+                    if (!names.contains(boost.getName())) {
                         showUUIDUsingComponents(sender, boost);
-                        uuids.add(boost.getUniqueId());
+                        names.add(boost.getName());
                         continue;
                     }
                     plugin.getBoostManager().removeBoost(boost);
@@ -147,23 +147,16 @@ public class CommandHandler implements CommandExecutor {
                     }
                     return true;
                 }
-                try {
-                    //noinspection ResultOfMethodCallIgnored
-                    UUID.fromString(args[1]);
-                } catch (IllegalArgumentException e) {
-                    sender.sendMessage(INVALID_UUID);
-                    return true;
-                }
-                final UUID uuid = UUID.fromString(args[1]);
+                final String name = args[1];
                 Boost boost = null;
                 for (Boost b : plugin.getBoostManager().getBoosts()) {
-                    if (b.getUniqueId().equals(uuid)) {
+                    if (b.getName().equalsIgnoreCase(name)) {
                         boost = b;
                         break;
                     }
                 }
                 if (boost == null) {
-                    sender.sendMessage(INVALID_UUID);
+                    sender.sendMessage(INVALID_NAME);
                     return true;
                 }
                 showInfo(sender, boost);
@@ -200,7 +193,7 @@ public class CommandHandler implements CommandExecutor {
                     return true;
                 }
                 try {
-                    final Boost UUIDBoost = plugin.getBoostManager().getBoostByUUID(UUID.fromString(args[1]));
+                    final Boost UUIDBoost = plugin.getBoostManager().getBoostByName(args[1]);
                     if (UUIDBoost != null) {
                         if (!sender.hasPermission("continuityboost.stop.uuid")) {
                             sender.sendMessage(NO_PERMISSION);
@@ -247,7 +240,7 @@ public class CommandHandler implements CommandExecutor {
                 }
 
                 try {
-                    final Boost UUIDBoost = plugin.getBoostManager().getBoostByUUID(UUID.fromString(args[1]));
+                    final Boost UUIDBoost = plugin.getBoostManager().getBoostByName(args[1]);
                     if (UUIDBoost != null) {
                         if (!sender.hasPermission("continuityboost.remove.uuid")) {
                             sender.sendMessage(NO_PERMISSION);
@@ -290,38 +283,43 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(MUST_BE_PLAYER);
                     return true;
                 }
-                if (args.length < 5) {
+                if (args.length < 6) {
                     sender.sendMessage(LITTLE_ARGS);
+                    return true;
+                }
+                final String boostName = args[1];
+                if (plugin.getBoostManager().getBoostByName(boostName) != null) {
+                    sender.sendMessage(INVALID_NAME);
                     return true;
                 }
                 final Player player = (Player) sender;
                 final int duration;
                 try {
-                    duration = Integer.parseInt(args[1]);
+                    duration = Integer.parseInt(args[2]);
                 } catch (NumberFormatException ignored) {
-                    sender.sendMessage(ChatColor.RED + args[1] + " is not a number!");
+                    sender.sendMessage(ChatColor.RED + args[2] + " is not a number!");
                     return true;
                 }
-                final BoostType type = BoostType.match(args[2]);
+                final BoostType type = BoostType.match(args[3]);
                 if (type == null) {
-                    sender.sendMessage(ChatColor.RED + args[2] + " is not a valid type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, ENTITY_DROP_MULTIPLIER, or VILLAGER)");
+                    sender.sendMessage(ChatColor.RED + args[3] + " is not a valid type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, ENTITY_DROP_MULTIPLIER, or VILLAGER)");
                     return true;
                 }
                 final int multiplier;
                 try {
-                    multiplier = Integer.parseInt(args[3]);
+                    multiplier = Integer.parseInt(args[4]);
                 } catch (NumberFormatException ignored) {
-                    sender.sendMessage(ChatColor.RED + args[3] + " is not a number!");
+                    sender.sendMessage(ChatColor.RED + args[4] + " is not a number!");
                     return true;
                 }
-                final PotionEffectType effectType = PotionEffectType.getByName(args[4]);
+                final PotionEffectType effectType = PotionEffectType.getByName(args[5]);
                 final Set<Material> selectedMaterials = new HashSet<>();
                 final Set<String> invalidMaterials = new HashSet<>();
                 boolean all = false;
-                if (args[4].contains("*")) {
+                if (args[5].contains("*")) {
                     all = true;
-                } else if (args[4].contains(",")) {
-                    for (String s : args[4].split(",")) {
+                } else if (args[5].contains(",")) {
+                    for (String s : args[5].split(",")) {
                         final Material mat = Material.matchMaterial(s.toUpperCase());
                         if (mat == null) {
                             invalidMaterials.add(s);
@@ -334,24 +332,24 @@ public class CommandHandler implements CommandExecutor {
                         invalidMaterials.add(s);
                     }
                 } else {
-                    final Material mat = Material.matchMaterial(args[4].toUpperCase());
+                    final Material mat = Material.matchMaterial(args[5].toUpperCase());
                     if (mat != null) {
                         if (mat.isBlock()) {
                             selectedMaterials.add(mat);
                         } else {
-                            invalidMaterials.add(args[4]);
+                            invalidMaterials.add(args[5]);
                         }
                     } else {
-                        invalidMaterials.add(args[4]);
+                        invalidMaterials.add(args[5]);
                     }
                 }
                 final Set<EntityType> selectedEntities = new HashSet<>();
                 final Set<String> invalidEntities = new HashSet<>();
                 boolean allEntities = false;
-                if (args[4].contains("*")) {
+                if (args[5].contains("*")) {
                     allEntities = true;
-                } else if (args[4].contains(",")) {
-                    for (String s : args[4].split(",")) {
+                } else if (args[5].contains(",")) {
+                    for (String s : args[5].split(",")) {
                         final EntityType entityType = getType(s);
                         if (entityType == null) {
                             invalidEntities.add(s);
@@ -364,26 +362,25 @@ public class CommandHandler implements CommandExecutor {
                         invalidEntities.add(s);
                     }
                 } else {
-                    final EntityType entityType = getType(args[4]);
+                    final EntityType entityType = getType(args[5]);
                     if (entityType != null) {
                         if (entityType.isAlive()) {
                             selectedEntities.add(entityType);
                         } else {
-                            invalidMaterials.add(args[4]);
+                            invalidMaterials.add(args[5]);
                         }
                     } else {
-                        invalidEntities.add(args[4]);
+                        invalidEntities.add(args[5]);
                     }
                 }
                 final String boostMessage;
-                UUID boostUUID;
                 switch (type) {
                     case EFFECT:
                         if (effectType == null) {
                             sender.sendMessage(ChatColor.RED + args[4] + " is not a potion effect!");
                             return true;
                         }
-                        boostMessage = getRestArgs(args, 5);
+                        boostMessage = getRestArgs(args, 6);
                         final PotionEffect effect = new PotionEffect(effectType, duration * 20, multiplier - 1);
                         final ItemStack eAdder = new ItemStack(player.getInventory().getItemInMainHand());
                         eAdder.setAmount(1);
@@ -392,9 +389,8 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) eMeta).setDamage(0);
                             eAdder.setItemMeta(eMeta);
                         }
-                        Boost newBoost = new Boost(eAdder, duration, type, boostMessage, effect, multiplier, null, null, null);
+                        Boost newBoost = new Boost(eAdder, duration, type, boostMessage, effect, multiplier, boostName, null, null);
                         plugin.getBoostManager().addBoost(newBoost);
-                        boostUUID = newBoost.getUniqueId();
                         break;
                     case ITEM_DROP_MULTIPLIER:
                         if (invalidMaterials.size() > 0) {
@@ -404,7 +400,7 @@ public class CommandHandler implements CommandExecutor {
                             }
                             return true;
                         }
-                        boostMessage = getRestArgs(args, 5);
+                        boostMessage = getRestArgs(args, 6);
                         final ItemStack iAdder = new ItemStack(player.getInventory().getItemInMainHand());
                         iAdder.setAmount(1);
                         final ItemMeta iMeta = iAdder.getItemMeta();
@@ -412,9 +408,8 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) iMeta).setDamage(0);
                             iAdder.setItemMeta(iMeta);
                         }
-                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, null, all ? null : selectedMaterials, null);
+                        Boost newB = new Boost(iAdder, duration, type, boostMessage, null, multiplier, boostName, all ? null : selectedMaterials, null);
                         plugin.getBoostManager().addBoost(newB);
-                        boostUUID = newB.getUniqueId();
                         break;
                     case ENTITY_DROP_MULTIPLIER:
                         if (invalidEntities.size() > 0) {
@@ -424,7 +419,7 @@ public class CommandHandler implements CommandExecutor {
                             }
                             return true;
                         }
-                        boostMessage = getRestArgs(args, 5);
+                        boostMessage = getRestArgs(args, 6);
                         final ItemStack enAdder = new ItemStack(player.getInventory().getItemInMainHand());
                         enAdder.setAmount(1);
                         final ItemMeta enMeta = enAdder.getItemMeta();
@@ -432,12 +427,11 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) enMeta).setDamage(0);
                             enAdder.setItemMeta(enMeta);
                         }
-                        Boost newE = new Boost(enAdder, duration, type, boostMessage, null, multiplier, null, allEntities ? null : null, selectedEntities);
+                        Boost newE = new Boost(enAdder, duration, type, boostMessage, null, multiplier, boostName, allEntities ? null : null, selectedEntities);
                         plugin.getBoostManager().addBoost(newE);
-                        boostUUID = newE.getUniqueId();
                         break;
                     default:
-                        boostMessage = getRestArgs(args, 4);
+                        boostMessage = getRestArgs(args, 5);
                         final ItemStack dAdder = new ItemStack(player.getInventory().getItemInMainHand());
                         dAdder.setAmount(1);
                         final ItemMeta dMeta = dAdder.getItemMeta();
@@ -445,12 +439,11 @@ public class CommandHandler implements CommandExecutor {
                             ((Damageable) dMeta).setDamage(0);
                             dAdder.setItemMeta(dMeta);
                         }
-                        Boost nBoost = new Boost(dAdder, duration, type, boostMessage, null, multiplier, null, null, null);
+                        Boost nBoost = new Boost(dAdder, duration, type, boostMessage, null, multiplier, boostName, null, null);
                         plugin.getBoostManager().addBoost(nBoost);
-                        boostUUID = nBoost.getUniqueId();
                         break;
                 }
-                sender.sendMessage(ChatColor.GREEN + "Successfully created a boost! (UUID: " + boostUUID + ")");
+                sender.sendMessage(ChatColor.GREEN + "Successfully created a boost! (Name: " + boostName + ")");
                 return true;
             //noinspection SpellCheckingInspection
             case "giveitem":
@@ -469,9 +462,9 @@ public class CommandHandler implements CommandExecutor {
                         return true;
                     }
                     final Player p = (Player) sender;
-                    final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[1]);
+                    final Boost boostToGive = plugin.getBoostManager().getBoostByName(args[1]);
                     if (boostToGive == null) {
-                        p.sendMessage(INVALID_UUID);
+                        p.sendMessage(INVALID_NAME);
                         return true;
                     }
                     final boolean dropped = giveItem(p, boostToGive.getBoostingItem());
@@ -485,13 +478,13 @@ public class CommandHandler implements CommandExecutor {
                     return true;
                 }
                 final Player playerToGive = PlayerUtils.getFromAll(args[1]);
-                final Boost boostToGive = plugin.getBoostManager().getBoostByUUID(args[2]);
+                final Boost boostToGive = plugin.getBoostManager().getBoostByName(args[2]);
                 if (playerToGive == null) {
                     sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
                     return true;
                 }
                 if (boostToGive == null) {
-                    sender.sendMessage(INVALID_UUID);
+                    sender.sendMessage(INVALID_NAME);
                     return true;
                 }
                 final boolean dropped = giveItem(playerToGive, boostToGive.getBoostingItem());
@@ -559,12 +552,12 @@ public class CommandHandler implements CommandExecutor {
                 }
                 final Boost startBoost;
                 try {
-                    startBoost = plugin.getBoostManager().getBoostByUUID(UUID.fromString(args[1]));
+                    startBoost = plugin.getBoostManager().getBoostByName(args[1]);
                     if (startBoost == null) {
                         throw new NullPointerException("The boost cannot be null!");
                     }
                 } catch (IllegalArgumentException | NullPointerException ignored) {
-                    sender.sendMessage(INVALID_UUID);
+                    sender.sendMessage(INVALID_NAME);
                     return true;
                 }
                 plugin.getBoostManager().startBoost(startBoost);
@@ -594,13 +587,13 @@ public class CommandHandler implements CommandExecutor {
     }
 
     private void showUUIDUsingComponents(@NotNull CommandSender sender, Boost boost) {
-        final TextComponent message = new TextComponent(ChatColor.GREEN + "- " + boost.getUniqueId().toString());
-        message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
+        final TextComponent message = new TextComponent(ChatColor.GREEN + "- " + boost.getName());
+        message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getName()));
         if (sender instanceof Player) {
             ((Player) sender).spigot().sendMessage(message);
             return;
         }
-        sender.sendMessage(ChatColor.GREEN + "- " + boost.getUniqueId().toString());
+        sender.sendMessage(ChatColor.GREEN + "- " + boost.getName());
     }
 
     private String combine(Set<Material> list) {
@@ -629,17 +622,17 @@ public class CommandHandler implements CommandExecutor {
         sendFormatted(sender, label, "help", "Show this help page. <param> = required, [param] = optional");
         sendFormatted(sender, label, "currentBoosts", "Show all boosts currently happening");
         sendFormatted(sender, label, "boosts", "Show all boosts saved in the file");
-        sendFormatted(sender, label, "info <uuid>", "See more information about a boost");
+        sendFormatted(sender, label, "info [name]", "See more information about a boost");
         sendFormatted(sender, label, "reload", "Reload the configuration files");
-        sendFormatted(sender, label, "stop <type|all|uuid>", "Stop all boosts, or a specific type");
-        sendFormatted(sender, label, "remove <type|all|uuid>", "Remove all boosts, or a specific type");
-        sendFormatted(sender, label, "add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT),  " +
+        sendFormatted(sender, label, "stop <type|all|name>", "Stop all boosts, or a specific type");
+        sendFormatted(sender, label, "remove <type|all|name>", "Remove all boosts, or a specific type");
+        sendFormatted(sender, label, "add <name> <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT),  " +
                         "Material,Material,Material, or EntityType,EntityType etc> <boost message>",
                 "Add the current item");
         //noinspection SpellCheckingInspection
-        sendFormatted(sender, label, "giveitem <uuid> [player]", "Give the item to a player");
+        sendFormatted(sender, label, "giveitem <name> [player]", "Give the item to a player");
         sendFormatted(sender, label, "toggle [player]", "Toggle the boost for a player");
-        sendFormatted(sender, label, "start <uuid>", "Start a boost");
+        sendFormatted(sender, label, "start <name>", "Start a boost");
     }
 
     @Nullable
@@ -714,13 +707,13 @@ public class CommandHandler implements CommandExecutor {
             final ItemMeta meta = boost.getBoostingItem().getItemMeta();
             sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((meta == null)
                     ? "" : meta.getDisplayName()));
-            final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
-            message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
+            final TextComponent message = new TextComponent(ChatColor.GOLD + "Name: " + ChatColor.AQUA + boost.getName());
+            message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getName()));
             if (sender instanceof Player) {
                 ((Player) sender).spigot().sendMessage(message);
                 return;
             }
-            sender.sendMessage(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
+            sender.sendMessage(ChatColor.GOLD + "Name: " + ChatColor.AQUA + boost.getName());
         } catch (NullPointerException ignored) {
             plugin.getBoostManager().removeBoost(boost);
         }

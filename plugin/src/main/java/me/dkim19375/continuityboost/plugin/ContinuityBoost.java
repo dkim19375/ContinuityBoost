@@ -32,8 +32,14 @@ public class ContinuityBoost extends CoreJavaPlugin {
 
     @Override
     public void onEnable() {
-        register();
-        saveConfigs();
+        try {
+            register();
+            saveConfigs();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log(Level.SEVERE, "Encountered an error while loading the plugin!");
+            getServer().getPluginManager().disablePlugin(this);
+        }
     }
 
     @Override
@@ -66,7 +72,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         }
 
         for (final Boost boost : new HashSet<>(boostManager.getBoosts())) {
-            if (boostsFile.getConfig().getSerializable(boost.getUniqueId().toString(), Boost.class) == null) {
+            if (boostsFile.getConfig().getSerializable(boost.getName(), Boost.class) == null) {
                 boostManager.removeBoost(boost);
             }
         }

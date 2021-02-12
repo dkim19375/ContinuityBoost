@@ -60,7 +60,7 @@ public class TabCompletionHandler implements TabCompleter {
     private Set<String> getCurrentBoosts() {
         final Set<String> set = new HashSet<>();
         for (final Boost boost : plugin.getBoostManager().getCurrentBoosts().keySet()) {
-            set.add(boost.getUniqueId().toString());
+            set.add(boost.getName());
         }
         return set;
     }
@@ -68,7 +68,7 @@ public class TabCompletionHandler implements TabCompleter {
     private Set<String> getAllBoosts() {
         final Set<String> set = new HashSet<>();
         for (final Boost boost : plugin.getBoostManager().getBoosts()) {
-            set.add(boost.getUniqueId().toString());
+            set.add(boost.getName());
         }
         return set;
     }

@@ -21,6 +21,7 @@ public class BlockBreakListener implements Listener {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("unused")
     @EventHandler()
     public void onBlockBreakEvent(BlockBreakEvent e) {
         if (e.isCancelled()) {

@@ -66,13 +66,13 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
 
     @Override
     @Nullable
-    public Booster getBoosterByUUID(@NotNull UUID uuid) {
-        return plugin.getBoostManager().getBoostByUUID(uuid);
+    public Booster getBoosterByUUID(@NotNull String name) {
+        return plugin.getBoostManager().getBoostByName(name);
     }
 
     @Override
     public void stopBoost(@NotNull final Booster boost) {
-        final Boost boost1 = plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
+        final Boost boost1 = plugin.getBoostManager().getBoostByName(boost.getName());
         if (boost1 != null) {
             plugin.getBoostManager().forceStopBoost(boost1);
         }
@@ -80,7 +80,7 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
 
     @Override
     public void startBoost(@NotNull final Booster boost) {
-        final Boost boost1 = plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
+        final Boost boost1 = plugin.getBoostManager().getBoostByName(boost.getName());
         if (boost1 != null) {
             plugin.getBoostManager().startBoost(boost1);
         }
@@ -117,11 +117,11 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
     @Override
     @NotNull
     public Booster createBoost(@NotNull ItemStack boostingItem, int duration, @NotNull BoostType type, @Nullable String boostMessage
-            , @Nullable PotionEffect effect, int multiplier, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
-        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, null, appliedBlocks, appliedEntities);
+            , @Nullable PotionEffect effect, int multiplier, @NotNull String name, @Nullable Set<Material> appliedBlocks, @Nullable Set<EntityType> appliedEntities) {
+        return new Boost(boostingItem, duration, type, boostMessage, effect, multiplier, name, appliedBlocks, appliedEntities);
     }
 
     private Boost convert(Booster boost) {
-        return plugin.getBoostManager().getBoostByUUID(boost.getUniqueId());
+        return plugin.getBoostManager().getBoostByName(boost.getName());
     }
 }

@@ -1,13 +1,13 @@
 package me.dkim19375.continuityboost.api;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
-import java.util.UUID;
 
 @SuppressWarnings("unused")
 public interface Booster {
@@ -75,7 +75,7 @@ public interface Booster {
      * @return a unique and persistent id for this entity
      */
     @NotNull
-    UUID getUniqueId();
+    String getName();
 
     /**
      * @return the blocks that will be affected with {@link BoostType#ITEM_DROP_MULTIPLIER},
@@ -89,4 +89,17 @@ public interface Booster {
      * or <b>null</b> if all blocks will be applied
      */
     void setAppliedBlocks(@Nullable Set<Material> blocks);
+
+    /**
+     * @return the entities that will be affected with {@link BoostType#ENTITY_DROP_MULTIPLIER},
+     * or <b>null</b> if all entities will be applied
+     */
+    @Nullable
+    Set<EntityType> getAppliedEntities();
+
+    /**
+     * @param entities The entities that will be affected with {@link BoostType#ENTITY_DROP_MULTIPLIER},
+     * or <b>null</b> if all entities will be applied
+     */
+    void setAppliedEntities(@Nullable Set<EntityType> entities);
 }

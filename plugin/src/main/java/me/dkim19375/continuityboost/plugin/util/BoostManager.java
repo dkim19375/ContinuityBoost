@@ -61,44 +61,28 @@ public class BoostManager {
     }
 
     public void saveConfigurationFile(final Boost boost) {
-        plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), boost);
+        plugin.getBoostsFile().getConfig().set(boost.getName(), boost);
     }
 
-    private void removeCurrentBoost(UUID uuid) {
+    private void removeCurrentBoost(String name) {
         for (Boost b : new HashSet<>(currentBoosts.keySet())) {
-            if (b.getUniqueId().equals(uuid)) {
+            if (b.getName().equalsIgnoreCase(name)) {
                 currentBoosts.remove(b);
             }
         }
     }
 
     public void removeBoost(Boost boost) {
-        boosts.removeIf(b -> b.getUniqueId().equals(boost.getUniqueId()));
-        removeCurrentBoost(boost.getUniqueId());
-        plugin.getBoostsFile().getConfig().set(boost.getUniqueId().toString(), null);
+        boosts.removeIf(b -> b.getName().equals(boost.getName()));
+        removeCurrentBoost(boost.getName());
+        plugin.getBoostsFile().getConfig().set(boost.getName(), null);
         forceSave();
     }
 
     @Nullable
-    public Boost getBoostByUUID(UUID uuid) {
+    public Boost getBoostByName(String name) {
         for (Boost boost : boosts) {
-            if (boost.getUniqueId().equals(uuid)) {
-                return boost;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    public Boost getBoostByUUID(String uuid) {
-        final UUID uuid1;
-        try {
-            uuid1 = UUID.fromString(uuid);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-        for (Boost boost : boosts) {
-            if (boost.getUniqueId().equals(uuid1)) {
+            if (boost.getName().equalsIgnoreCase(name)) {
                 return boost;
             }
         }
@@ -121,7 +105,7 @@ public class BoostManager {
                 }
             });
         }
-        removeCurrentBoost(boost.getUniqueId());
+        removeCurrentBoost(boost.getName());
     }
 
     public void forceStopBoost(final BoostType boostType) {
@@ -159,7 +143,7 @@ public class BoostManager {
                     p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 }
                 Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
-                removeCurrentBoost(boost.getUniqueId());
+                removeCurrentBoost(boost.getName());
                 currentBoosts.put(boost, System.currentTimeMillis());
                 break;
             case EXP_MULTIPLIER:
@@ -170,7 +154,7 @@ public class BoostManager {
                     p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 }
                 Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
-                removeCurrentBoost(boost.getUniqueId());
+                removeCurrentBoost(boost.getName());
                 currentBoosts.put(boost, System.currentTimeMillis());
                 break;
             default:
