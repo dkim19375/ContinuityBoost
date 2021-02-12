@@ -170,7 +170,7 @@ public class CommandHandler implements CommandExecutor {
                                 + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
                     }
                     sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
-                    sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.AQUA + formatString(boost.getBoostingItem().getType().name()));
+                    sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.RESET + formatString(boost.getBoostingItem().getType().name()));
                     sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((boost.getBoostingItem().getItemMeta() == null)
                             ? "" : Objects.requireNonNull(boost.getBoostingItem().getItemMeta()).getDisplayName()));
                     final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
@@ -235,7 +235,7 @@ public class CommandHandler implements CommandExecutor {
                 }
                 final BoostType boostType = BoostType.match(args[1]);
                 if (boostType == null) {
-                    sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
+                    sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, ENTITY_DROP_MULTIPLIER, or VILLAGER)");
                     return true;
                 }
                 plugin.getBoostManager().forceStopBoost(boostType);
@@ -283,7 +283,7 @@ public class CommandHandler implements CommandExecutor {
                 }
                 final BoostType boostTypeRemove = BoostType.match(args[1]);
                 if (boostTypeRemove == null) {
-                    sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
+                    sender.sendMessage(ChatColor.RED + "Invalid boost type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, ENTITY_DROP_MULTIPLIER, or VILLAGER)");
                     return true;
                 }
                 int amount = 0;
@@ -320,7 +320,7 @@ public class CommandHandler implements CommandExecutor {
                 }
                 final BoostType type = BoostType.match(args[2]);
                 if (type == null) {
-                    sender.sendMessage(ChatColor.RED + args[2] + " is not a valid type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, or VILLAGER)");
+                    sender.sendMessage(ChatColor.RED + args[2] + " is not a valid type! (EXP_MULTIPLIER, ITEM_DROP_MULTIPLIER, EFFECT, ENTITY_DROP_MULTIPLIER, or VILLAGER)");
                     return true;
                 }
                 final int multiplier;
@@ -593,6 +593,10 @@ public class CommandHandler implements CommandExecutor {
     }
 
     private void giveBoostToggled(Player togglePlayer) {
+        giveBoostToggled(plugin, togglePlayer);
+    }
+
+    public static void giveBoostToggled(ContinuityBoost plugin, Player togglePlayer) {
         for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
             if (toggleBoost.getEffect() != null) {
                 final long endTime = plugin.getBoostManager().getCurrentBoosts().get(toggleBoost) + (toggleBoost.getDuration() * 1000L);

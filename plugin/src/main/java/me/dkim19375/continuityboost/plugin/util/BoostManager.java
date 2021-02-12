@@ -3,6 +3,7 @@ package me.dkim19375.continuityboost.plugin.util;
 import me.dkim19375.continuityboost.api.BoostType;
 
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
+import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -39,6 +40,15 @@ public class BoostManager {
                 }
             }
         }, 1, 1);
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (UUID uuid : toggledPlayers) {
+                final Player player = Bukkit.getPlayer(uuid);
+                if (player == null) {
+                    continue;
+                }
+                CommandHandler.giveBoostToggled(plugin, player);
+            }
+        }, 20, 20);
     }
 
     public void forceSave() {
