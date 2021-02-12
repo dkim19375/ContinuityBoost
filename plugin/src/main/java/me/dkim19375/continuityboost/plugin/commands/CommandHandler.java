@@ -568,6 +568,24 @@ public class CommandHandler implements CommandExecutor {
                     }
                 }
                 return true;
+            case "start":
+                if (args.length > 2) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    return true;
+                }
+                final Boost startBoost;
+                try {
+                    startBoost = plugin.getBoostManager().getBoostByUUID(UUID.fromString(args[1]));
+                    if (startBoost == null) {
+                        throw new NullPointerException("The boost cannot be null!");
+                    }
+                } catch (IllegalArgumentException | NullPointerException ignored) {
+                    sender.sendMessage(INVALID_UUID);
+                    return true;
+                }
+                plugin.getBoostManager().startBoost(startBoost);
+                sender.sendMessage(ChatColor.GREEN + "Successfully started the boost!");
+                return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid argument!");
                 return true;
@@ -644,6 +662,7 @@ public class CommandHandler implements CommandExecutor {
         //noinspection SpellCheckingInspection
         sendFormatted(sender, label, "giveitem <uuid> [player]", "Give the item to a player");
         sendFormatted(sender, label, "toggle [player]", "Toggle the boost for a player");
+        sendFormatted(sender, label, "start <uuid>", "Start a boost");
     }
 
     @Nullable

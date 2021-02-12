@@ -28,7 +28,7 @@ public class TabCompletionHandler implements TabCompleter {
         this.plugin = plugin;
         completesListMap = HashMultimap.create();
         //noinspection SpellCheckingInspection
-        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add", "giveitem", "toggle");
+        add("core", "help", "currentBoosts", "boosts", "info", "reload", "stop", "add", "giveitem", "toggle", "start");
         add("stop", "type", "all", "<uuid>");
         add("time", "<time in seconds>");
         String[] types = new String[BoostType.values().length];
@@ -118,6 +118,9 @@ public class TabCompletionHandler implements TabCompleter {
                 }
                 //noinspection SpellCheckingInspection
                 if (args[0].equalsIgnoreCase("giveitem")) {
+                    return getPartial(args[1], getAllBoosts());
+                }
+                if (args[0].equalsIgnoreCase("start")) {
                     return getPartial(args[1], getAllBoosts());
                 }
                 if (args[0].equalsIgnoreCase("toggle")) {

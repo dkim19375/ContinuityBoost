@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class BoostManager {
     private final ContinuityBoost plugin;
@@ -105,7 +106,7 @@ public class BoostManager {
                 if (effect == null) {
                     return;
                 }
-                if (effect.equals(boost.getEffect())) {
+                if (effect.getType() == boost.getEffect().getType()) {
                     player.removePotionEffect(boost.getEffect().getType());
                 }
             });
@@ -147,6 +148,7 @@ public class BoostManager {
                     p.addPotionEffect(effect);
                     p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 }
+                Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 removeCurrentBoost(boost.getUniqueId());
                 currentBoosts.put(boost, System.currentTimeMillis());
                 break;
@@ -157,8 +159,12 @@ public class BoostManager {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 }
+                Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
                 removeCurrentBoost(boost.getUniqueId());
                 currentBoosts.put(boost, System.currentTimeMillis());
+                break;
+            default:
+                throw new IllegalArgumentException("The booster type");
         }
     }
 

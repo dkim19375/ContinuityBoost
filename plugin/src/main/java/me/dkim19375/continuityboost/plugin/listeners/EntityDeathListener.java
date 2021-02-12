@@ -11,10 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class EntityDeathListener implements Listener {
     private final ContinuityBoost plugin;
@@ -23,6 +20,7 @@ public class EntityDeathListener implements Listener {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeathEvent(EntityDeathEvent e) {
         final Player player = e.getEntity().getKiller();
@@ -39,9 +37,6 @@ public class EntityDeathListener implements Listener {
         int m = 0;
         Set<EntityType> types = new HashSet<>();
         for (Boost b : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.ENTITY_DROP_MULTIPLIER)) {
-            if (b.getAppliedEntities() != null) {
-                types.addAll(b.getAppliedEntities());
-            }
             if (b.getMultiplier() > m) {
                 m = b.getMultiplier();
                 boost = b;
@@ -50,15 +45,22 @@ public class EntityDeathListener implements Listener {
         if (boost == null) {
             return;
         }
+        if (boost.getAppliedEntities() == null) {
+            types.addAll(Arrays.asList(EntityType.values().clone()));
+        } else {
+            types.addAll(boost.getAppliedEntities());
+        }
         if (!types.contains(e.getEntityType())) {
             return;
         }
-        final List<ItemStack> original = new ArrayList<>(e.getDrops());
+        final List<ItemStack> original = e.getDrops();
         final List<ItemStack> drops = new ArrayList<>();
         for (int i = 0; i < boost.getMultiplier(); i++) {
             drops.addAll(original);
         }
         e.getDrops().clear();
-        e.getDrops().addAll(drops);
+        for (ItemStack drop : drops) {
+            e.getEntity().getWorld().dropItemNaturally(e.getEntity().getLocation(), drop);
+        }
     }
 }

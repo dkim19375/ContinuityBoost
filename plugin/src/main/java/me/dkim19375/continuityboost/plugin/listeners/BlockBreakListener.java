@@ -1,9 +1,9 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
 import me.dkim19375.continuityboost.api.BoostType;
-
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
+import me.dkim19375.continuityboost.plugin.util.RandomTypeUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
@@ -13,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class BlockBreakListener implements Listener {
     private final ContinuityBoost plugin;
@@ -24,6 +23,9 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler()
     public void onBlockBreakEvent(BlockBreakEvent e) {
+        if (e.isCancelled()) {
+            return;
+        }
         Boost boost = null;
         if (plugin.getBoostManager().getCurrentBoostsPerType(BoostType.ITEM_DROP_MULTIPLIER).size() < 1) {
             return;
@@ -47,10 +49,9 @@ public class BlockBreakListener implements Listener {
             return;
         }
         e.setDropItems(false);
-        final List<ItemStack> original = new ArrayList<>(e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
         final List<ItemStack> drops = new ArrayList<>();
         for (int i = 0; i < boost.getMultiplier(); i++) {
-            drops.addAll(original);
+            drops.addAll(RandomTypeUtils.getDropsOfItem(e.getBlock().getType(), e.getPlayer().getInventory().getItemInMainHand(), e.getPlayer()));
         }
         int iron = 0;
         int gold = 0;
