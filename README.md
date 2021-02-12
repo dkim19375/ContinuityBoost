@@ -1,0 +1,2 @@
+# ContinuityBoost
+A boost plugin
