@@ -47,6 +47,17 @@ public class CommandHandler implements CommandExecutor {
         return formatted;
     }
 
+    public static void giveBoostToggled(ContinuityBoost plugin, Player togglePlayer) {
+        for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
+            if (toggleBoost.getEffect() != null) {
+                final long endTime = plugin.getBoostManager().getCurrentBoosts().get(toggleBoost) + (toggleBoost.getDuration() * 1000L);
+                final long timeLeft = ((endTime - System.currentTimeMillis()) / 1000) * 20;
+                final PotionEffect effect = new PotionEffect(toggleBoost.getEffect().getType(), (int) timeLeft, toggleBoost.getMultiplier());
+                togglePlayer.addPotionEffect(effect);
+            }
+        }
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission("continuityboost.command")) {
@@ -127,7 +138,13 @@ public class CommandHandler implements CommandExecutor {
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(LITTLE_ARGS);
+                    sender.sendMessage(ChatColor.AQUA + "--------------------------");
+                    sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Current boosts:");
+                    sender.sendMessage(ChatColor.AQUA + "--------------------------");
+                    for (final Boost boost : new HashSet<>(plugin.getBoostManager().getCurrentBoosts().keySet())) {
+                        showInfo(sender, boost);
+                        sender.sendMessage(ChatColor.AQUA + "--------------------------");
+                    }
                     return true;
                 }
                 try {
@@ -149,40 +166,7 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(INVALID_UUID);
                     return true;
                 }
-                try {
-                    sender.sendMessage(ChatColor.GOLD + "Info:");
-                    sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
-                    sender.sendMessage(ChatColor.GOLD + "Multiplier: " + ChatColor.AQUA + boost.getMultiplier());
-                    if (boost.getType() == BoostType.ITEM_DROP_MULTIPLIER) {
-                        sender.sendMessage(ChatColor.GOLD + "Applied items: " + ChatColor.AQUA + (boost.getAppliedBlocks() == null
-                                ? "ALL" : combine(boost.getAppliedBlocks())));
-                    }
-                    if (boost.getType() == BoostType.ENTITY_DROP_MULTIPLIER) {
-                        sender.sendMessage(ChatColor.GOLD + "Applied entities: " + ChatColor.AQUA + (boost.getAppliedEntities() == null
-                                ? "ALL" : combineEntities(boost.getAppliedEntities())));
-                    }
-                    if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
-                        final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
-                        final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
-                        sender.sendMessage(ChatColor.GOLD + "Time started: "
-                                + ChatColor.AQUA + formatNumbers((-(startedTime - System.currentTimeMillis())) / 1000) + " ago");
-                        sender.sendMessage(ChatColor.GOLD + "Time when expires: "
-                                + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
-                    }
-                    sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
-                    sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.RESET + formatString(boost.getBoostingItem().getType().name()));
-                    sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((boost.getBoostingItem().getItemMeta() == null)
-                            ? "" : Objects.requireNonNull(boost.getBoostingItem().getItemMeta()).getDisplayName()));
-                    final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
-                    message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
-                    if (sender instanceof Player) {
-                        ((Player) sender).spigot().sendMessage(message);
-                        return true;
-                    }
-                    sender.sendMessage(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
-                } catch (NullPointerException ignored) {
-                    plugin.getBoostManager().removeBoost(boost);
-                }
+                showInfo(sender, boost);
                 return true;
             case "reload":
                 if (!sender.hasPermission("continuityboost.reload")) {
@@ -596,17 +580,6 @@ public class CommandHandler implements CommandExecutor {
         giveBoostToggled(plugin, togglePlayer);
     }
 
-    public static void giveBoostToggled(ContinuityBoost plugin, Player togglePlayer) {
-        for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
-            if (toggleBoost.getEffect() != null) {
-                final long endTime = plugin.getBoostManager().getCurrentBoosts().get(toggleBoost) + (toggleBoost.getDuration() * 1000L);
-                final long timeLeft = ((endTime - System.currentTimeMillis()) / 1000) * 20;
-                final PotionEffect effect = new PotionEffect(toggleBoost.getEffect().getType(), (int) timeLeft, toggleBoost.getMultiplier());
-                togglePlayer.addPotionEffect(effect);
-            }
-        }
-    }
-
     private boolean giveItem(Player p, ItemStack item) {
         if (p.getInventory().firstEmpty() == -1) {
             p.getWorld().dropItemNaturally(p.getLocation(), item);
@@ -713,5 +686,43 @@ public class CommandHandler implements CommandExecutor {
             return minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
         }
         return hours + " hour" + (hours == 1 ? "" : "s") + ", " + minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
+    }
+
+    public void showInfo(CommandSender sender, Boost boost) {
+        try {
+            sender.sendMessage(ChatColor.GOLD + "Info:");
+            sender.sendMessage(ChatColor.GOLD + "BoostType: " + ChatColor.AQUA + boost.getType().name());
+            sender.sendMessage(ChatColor.GOLD + "Multiplier: " + ChatColor.AQUA + boost.getMultiplier());
+            if (boost.getType() == BoostType.ITEM_DROP_MULTIPLIER) {
+                sender.sendMessage(ChatColor.GOLD + "Applied items: " + ChatColor.AQUA + (boost.getAppliedBlocks() == null
+                        ? "ALL" : combine(boost.getAppliedBlocks())));
+            }
+            if (boost.getType() == BoostType.ENTITY_DROP_MULTIPLIER) {
+                sender.sendMessage(ChatColor.GOLD + "Applied entities: " + ChatColor.AQUA + (boost.getAppliedEntities() == null
+                        ? "ALL" : combineEntities(boost.getAppliedEntities())));
+            }
+            if (plugin.getBoostManager().getCurrentBoosts().containsKey(boost)) {
+                final long startedTime = plugin.getBoostManager().getCurrentBoosts().get(boost);
+                final long endTime = plugin.getBoostManager().getCurrentBoosts().get(boost) + (boost.getDuration() * 1000L);
+                sender.sendMessage(ChatColor.GOLD + "Time started: "
+                        + ChatColor.AQUA + formatNumbers((-(startedTime - System.currentTimeMillis())) / 1000) + " ago");
+                sender.sendMessage(ChatColor.GOLD + "Time when expires: "
+                        + ChatColor.AQUA + formatNumbers((endTime - System.currentTimeMillis()) / 1000));
+            }
+            sender.sendMessage(ChatColor.GOLD + "Total time of boost: " + ChatColor.AQUA + formatNumbers(boost.getDuration()));
+            sender.sendMessage(ChatColor.GOLD + "Item: " + ChatColor.RESET + formatString(boost.getBoostingItem().getType().name()));
+            final ItemMeta meta = boost.getBoostingItem().getItemMeta();
+            sender.sendMessage(ChatColor.GOLD + "Item name: " + ChatColor.AQUA + ((meta == null)
+                    ? "" : meta.getDisplayName()));
+            final TextComponent message = new TextComponent(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
+            message.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, boost.getUniqueId().toString()));
+            if (sender instanceof Player) {
+                ((Player) sender).spigot().sendMessage(message);
+                return;
+            }
+            sender.sendMessage(ChatColor.GOLD + "UUID: " + ChatColor.AQUA + boost.getUniqueId().toString());
+        } catch (NullPointerException ignored) {
+            plugin.getBoostManager().removeBoost(boost);
+        }
     }
 }
