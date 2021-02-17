@@ -20,6 +20,7 @@ public class PlayerInteractListener implements Listener {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInteractEvent(PlayerInteractEvent e) {
         if (!e.getAction().name().startsWith("RIGHT_CLICK_")) {
@@ -49,7 +50,7 @@ public class PlayerInteractListener implements Listener {
             }
         }
         for (Boost boost : boosts) {
-            plugin.getBoostManager().startBoost(boost);
+            plugin.getBoostManager().startBoost(boost, e.getPlayer());
         }
     }
 

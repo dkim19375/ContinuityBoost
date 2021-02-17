@@ -16,14 +16,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.entity.Player;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class ContinuityBoost extends CoreJavaPlugin {
     private final BoostManager boostManager = new BoostManager(this);
     private ConfigFile boostsFile;
+    private final Set<UUID> debuggedPlayers = new HashSet<>();
 
     @Override
     public void onLoad() {
@@ -106,9 +109,16 @@ public class ContinuityBoost extends CoreJavaPlugin {
             }
             TabCompletionHandler.setMaterials(materials);
         });
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            getBoostManager().getToggledPlayers().add(p.getUniqueId());
+        }
     }
 
     public BoostManager getBoostManager() { return boostManager; }
 
     public ConfigFile getBoostsFile() { return boostsFile; }
+
+    public Set<UUID> getDebuggedPlayers() {
+        return debuggedPlayers;
+    }
 }

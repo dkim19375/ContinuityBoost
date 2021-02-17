@@ -4,7 +4,7 @@ version: ${pluginVersion}
 description: Have global boosts with items!
 author: dkim19375
 depend: [  ]
-api-version: 1.13
+api-version: 1.16
 
 commands:
   continuityboost:
@@ -37,6 +37,8 @@ permissions:
       - continuityboost.giveitem.others
       - continuityboost.toggle.self
       - continuityboost.toggle.others
+      - continuityboost.start
+      - continuityboost.debug
   continuityboost.command:
     description: Use the /continuityboost command
   continuityboost.currentboosts:
@@ -80,3 +82,7 @@ permissions:
     description: Toggle having boosts
   continuityboost.toggle.others:
     description: Toggle other people having boosts
+  continuityboost.start:
+    description: Start a boost
+  continuityboost.debug:
+    description: Debug the plugin

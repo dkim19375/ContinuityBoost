@@ -2,6 +2,7 @@ package me.dkim19375.continuityboost.api;
 
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -65,8 +66,9 @@ public interface ContinuityBoostAPI {
 
     /**
      * @param booster The booster to start
+     * @param boostStarter The player that starts the boost
      */
-    void startBoost(@NotNull final Booster booster);
+    void startBoost(@NotNull final Booster booster, @Nullable final Player boostStarter);
 
     /**
      * @param type The types of boosts to stop

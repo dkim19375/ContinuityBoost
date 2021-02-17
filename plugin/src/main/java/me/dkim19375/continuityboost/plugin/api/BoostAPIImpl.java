@@ -8,6 +8,7 @@ import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -79,10 +80,10 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
     }
 
     @Override
-    public void startBoost(@NotNull final Booster boost) {
+    public void startBoost(@NotNull final Booster boost, @Nullable final Player boostStarter) {
         final Boost boost1 = plugin.getBoostManager().getBoostByName(boost.getName());
         if (boost1 != null) {
-            plugin.getBoostManager().startBoost(boost1);
+            plugin.getBoostManager().startBoost(boost1, boostStarter);
         }
     }
 

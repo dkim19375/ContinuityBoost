@@ -47,6 +47,7 @@ public class TabCompletionHandler implements TabCompleter {
         }
         add("effects", effects);
         add("msg", "<boost message>");
+        add("name", "<name>");
     }
 
     public static void setMaterials(Set<String> materials) {
@@ -114,7 +115,7 @@ public class TabCompletionHandler implements TabCompleter {
                     return getPartial(args[1], getAllBoosts());
                 }
                 if (args[0].equalsIgnoreCase("add")) {
-                    return getPartial(args[1], completesListMap.get("time"));
+                    return getPartial(args[1], completesListMap.get("name"));
                 }
                 //noinspection SpellCheckingInspection
                 if (args[0].equalsIgnoreCase("giveitem")) {
@@ -128,7 +129,7 @@ public class TabCompletionHandler implements TabCompleter {
                 }
             case 3:
                 if (args[0].equalsIgnoreCase("add")) {
-                    return getPartial(args[2], completesListMap.get("types"));
+                    return getPartial(args[1], completesListMap.get("time"));
                 }
                 //noinspection SpellCheckingInspection
                 if (args[0].equalsIgnoreCase("giveitem")) {
@@ -136,9 +137,13 @@ public class TabCompletionHandler implements TabCompleter {
                 }
             case 4:
                 if (args[0].equalsIgnoreCase("add")) {
-                    return getPartial(args[3], completesListMap.get("multiplier"));
+                    return getPartial(args[2], completesListMap.get("types"));
                 }
             case 5:
+                if (args[0].equalsIgnoreCase("add")) {
+                    return getPartial(args[3], completesListMap.get("multiplier"));
+                }
+            case 6:
                 // add <time in seconds> <type> <multiplier> <effect (only if the type is EFFECT)> <boost message>
                 if (args[0].equalsIgnoreCase("add")) {
                     final BoostType boostType = BoostType.match(args[2]);
@@ -155,7 +160,7 @@ public class TabCompletionHandler implements TabCompleter {
                     return getPartial(args[4], completesListMap.get("msg"));
                 }
             default:
-                if (args.length > 5) {
+                if (args.length > 6) {
                     return getPartial(args[args.length - 1], completesListMap.get("msg"));
                 }
                 return ImmutableList.of();

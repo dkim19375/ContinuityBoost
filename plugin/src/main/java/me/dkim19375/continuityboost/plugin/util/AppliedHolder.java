@@ -19,15 +19,11 @@ public class AppliedHolder implements ConfigurationSerializable {
         this.appliedEntities = appliedEntities;
         appliedBlocksString = new HashSet<>();
         appliedEntitiesString = new HashSet<>();
-        if (appliedBlocks != null) {
-            for (Material m : appliedBlocks) {
-                appliedBlocksString.add(m.name());
-            }
+        for (Material m : appliedBlocks == null ? new ArrayList<Material>() : appliedBlocks) {
+            appliedBlocksString.add(m.name());
         }
-        if (appliedEntities != null) {
-            for (EntityType e : appliedEntities) {
-                appliedEntitiesString.add(e.name());
-            }
+        for (EntityType e : appliedEntities == null ? new ArrayList<EntityType>() : appliedEntities) {
+            appliedEntitiesString.add(e.name());
         }
     }
 
@@ -46,33 +42,31 @@ public class AppliedHolder implements ConfigurationSerializable {
         final Set<String> materialStringList;
         try {
             //noinspection unchecked
-            materialStringList = (HashSet<String>) map.get("materials");
-            if (materialStringList == null) {
-                throw new NullPointerException();
-            }
+            materialStringList = new HashSet<>((List<String>) map.get("materials"));
         } catch (Exception e) {
             return null;
         }
-        for (String s : materialStringList) {
-            if (Material.matchMaterial(s) != null) {
-                materialList.add(Material.matchMaterial(s));
+        if (!materialStringList.isEmpty()) {
+            for (String s : materialStringList) {
+                if (Material.matchMaterial(s) != null) {
+                    materialList.add(Material.matchMaterial(s));
+                }
             }
         }
         final Set<EntityType> entityList = new HashSet<>();
         final Set<String> entityStringList;
         try {
             //noinspection unchecked
-            entityStringList = (HashSet<String>) map.get("entities");
-            if (entityStringList == null) {
-                throw new NullPointerException();
-            }
+            entityStringList = new HashSet<>((List<String>) map.get("entities"));
         } catch (Exception e) {
             return null;
         }
-        for (String s : entityStringList) {
-            try {
-                entityList.add(EntityType.valueOf(s));
-            } catch (Exception ignored) {}
+        if (!entityStringList.isEmpty()) {
+            for (String s : entityStringList) {
+                try {
+                    entityList.add(EntityType.valueOf(s));
+                } catch (Exception ignored) {}
+            }
         }
         return new AppliedHolder(materialList, entityList);
     }

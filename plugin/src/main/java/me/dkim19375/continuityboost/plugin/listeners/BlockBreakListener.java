@@ -56,6 +56,7 @@ public class BlockBreakListener implements Listener {
         }
         int iron = 0;
         int gold = 0;
+        int debris = 0;
         for (ItemStack item : drops) {
             if (item.getType() == Material.IRON_ORE) {
                 iron++;
@@ -63,13 +64,19 @@ public class BlockBreakListener implements Listener {
             if (item.getType() == Material.GOLD_ORE) {
                 gold++;
             }
+            if (item.getType() == Material.ANCIENT_DEBRIS) {
+                debris++;
+            }
         }
-        drops.removeIf(this::isIronOrGold);
+        drops.removeIf(this::isIronOrGoldOrDebris);
         for (int i = 0; i < iron; i++) {
             drops.add(new ItemStack(Material.IRON_INGOT));
         }
         for (int i = 0; i < gold; i++) {
             drops.add(new ItemStack(Material.GOLD_INGOT));
+        }
+        for (int i = 0; i < debris; i++) {
+            drops.add(new ItemStack(Material.NETHERITE_SCRAP));
         }
         for (ItemStack item : drops) {
             if (e.getBlock().getLocation().getWorld() == null) {
@@ -79,7 +86,7 @@ public class BlockBreakListener implements Listener {
         }
     }
 
-    private boolean isIronOrGold(ItemStack item) {
-        return item.getType() == Material.IRON_ORE || item.getType() == Material.GOLD_ORE;
+    private boolean isIronOrGoldOrDebris(ItemStack item) {
+        return item.getType() == Material.IRON_ORE || item.getType() == Material.GOLD_ORE || item.getType() == Material.ANCIENT_DEBRIS;
     }
 }

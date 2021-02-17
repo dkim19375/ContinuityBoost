@@ -6,6 +6,7 @@ import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.dkim19375core.external.FormattingUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
@@ -131,7 +132,8 @@ public class BoostManager {
         }
     }
 
-    public void startBoost(@NotNull final Boost boost) {
+    public void startBoost(@NotNull final Boost boost, @Nullable final Player player, final boolean showMessage,
+                           final String message) {
         switch (boost.getType()) {
             case EFFECT:
                 if (boost.getEffect() == null) {
@@ -140,9 +142,9 @@ public class BoostManager {
                 final PotionEffect effect = boost.getEffect();
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     p.addPotionEffect(effect);
-                    p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
+                    sendBoostMessage(boost, player, showMessage, message, p);
                 }
-                Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
+                broadcastBoostMessage(boost, player, showMessage, message);
                 removeCurrentBoost(boost.getName());
                 currentBoosts.put(boost, System.currentTimeMillis());
                 break;
@@ -151,15 +153,44 @@ public class BoostManager {
             case ENTITY_DROP_MULTIPLIER:
             case VILLAGER:
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    p.sendMessage(FormattingUtils.formatWithColors(boost.getBoostMessage()));
+                    sendBoostMessage(boost, player, showMessage, message, p);
                 }
-                Bukkit.getLogger().log(Level.INFO, FormattingUtils.formatWithColors(boost.getBoostMessage()));
+                broadcastBoostMessage(boost, player, showMessage, message);
                 removeCurrentBoost(boost.getName());
                 currentBoosts.put(boost, System.currentTimeMillis());
                 break;
             default:
                 throw new IllegalArgumentException("The booster type");
         }
+    }
+
+    private void sendBoostMessage(@NotNull Boost boost, @Nullable Player player, boolean showMessage, String message, Player p) {
+        if (showMessage) {
+            p.sendMessage(formatBoostMsg(player, (player == null ? ""
+                    : "&a&l" + player.getDisplayName() + " used &r") + (message == null ? boost.getBoostMessage() : message)));
+        }
+    }
+
+    private void broadcastBoostMessage(@NotNull Boost boost, @Nullable Player player, boolean showMessage, String message) {
+        if (showMessage) {
+            Bukkit.getLogger().log(Level.INFO, formatBoostMsg(player, (player == null ? ""
+                    : "&a&l" + player.getDisplayName() + " used &r") + (message == null ? boost.getBoostMessage() : message)));
+        }
+    }
+
+    private String formatBoostMsg(@Nullable final Player player, @NotNull String s) {
+        if (player == null) {
+            return FormattingUtils.formatWithColors(s);
+        }
+        return FormattingUtils.formatWithColors(s);
+    }
+
+    public void startBoost(@NotNull final Boost boost, @Nullable final Player player) {
+        startBoost(boost, player, true, boost.getBoostMessage());
+    }
+
+    public void startBoost(@NotNull final Boost boost, @Nullable final Player player, boolean showMessage) {
+        startBoost(boost, player, showMessage, boost.getBoostMessage());
     }
 
     @NotNull

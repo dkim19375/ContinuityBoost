@@ -69,19 +69,6 @@ public class CommandHandler implements CommandExecutor {
             sender.sendMessage(LITTLE_ARGS);
             return true;
         }
-        if (args.length > 2) {
-            if (!args[0].equalsIgnoreCase("add")) {
-                //noinspection SpellCheckingInspection
-                if (!args[0].equalsIgnoreCase("giveitem")) {
-                    sender.sendMessage(TOO_MANY_ARGS);
-                    return true;
-                }
-                if (args.length > 3) {
-                    sender.sendMessage(TOO_MANY_ARGS);
-                    return true;
-                }
-            }
-        }
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "help":
                 showHelp(sender, label);
@@ -147,6 +134,10 @@ public class CommandHandler implements CommandExecutor {
                     }
                     return true;
                 }
+                if (args.length > 2) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    return true;
+                }
                 final String name = args[1];
                 Boost boost = null;
                 for (Boost b : plugin.getBoostManager().getBoosts()) {
@@ -177,6 +168,10 @@ public class CommandHandler implements CommandExecutor {
             case "stop":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
+                    return true;
+                }
+                if (args.length > 2) {
+                    sender.sendMessage(TOO_MANY_ARGS);
                     return true;
                 }
                 if (args[1].equalsIgnoreCase("all")) {
@@ -222,6 +217,10 @@ public class CommandHandler implements CommandExecutor {
             case "remove":
                 if (args.length < 2) {
                     sender.sendMessage(LITTLE_ARGS);
+                    return true;
+                }
+                if (args.length > 2) {
+                    sender.sendMessage(TOO_MANY_ARGS);
                     return true;
                 }
                 if (args[1].equalsIgnoreCase("all")) {
@@ -451,6 +450,10 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(LITTLE_ARGS);
                     return true;
                 }
+                if (args.length > 3) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    return true;
+                }
                 if (args.length == 2) {
                     //noinspection SpellCheckingInspection
                     if (!sender.hasPermission("continuityboost.giveitem.self")) {
@@ -477,8 +480,8 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(NO_PERMISSION);
                     return true;
                 }
-                final Player playerToGive = PlayerUtils.getFromAll(args[1]);
-                final Boost boostToGive = plugin.getBoostManager().getBoostByName(args[2]);
+                final Player playerToGive = PlayerUtils.getFromAll(args[2]);
+                final Boost boostToGive = plugin.getBoostManager().getBoostByName(args[1]);
                 if (playerToGive == null) {
                     sender.sendMessage(ChatColor.RED + "That is not a valid username or UUID!");
                     return true;
@@ -537,7 +540,7 @@ public class CommandHandler implements CommandExecutor {
                     giveBoostToggled(togglePlayer);
                     return true;
                 }
-                sender.sendMessage(ChatColor.GOLD + "&6You have now toggled off the boosts!");
+                sender.sendMessage(ChatColor.GOLD + "You have now toggled off the boosts!");
                 togglePlayer.sendMessage(applyColors("&6&lGlobal Boost &7&l[&c✕&7&l]"));
                 for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
                     if (toggleBoost.getEffect() != null) {
@@ -546,8 +549,27 @@ public class CommandHandler implements CommandExecutor {
                 }
                 return true;
             case "start":
+                if (!sender.hasPermission("continuityboost.start")) {
+                    sender.sendMessage(NO_PERMISSION);
+                    return true;
+                }
                 if (args.length > 2) {
-                    sender.sendMessage(TOO_MANY_ARGS);
+                    final Boost startBoost;
+                    try {
+                        startBoost = plugin.getBoostManager().getBoostByName(args[1]);
+                        if (startBoost == null) {
+                            throw new NullPointerException("The boost cannot be null!");
+                        }
+                    } catch (IllegalArgumentException | NullPointerException ignored) {
+                        sender.sendMessage(INVALID_NAME);
+                        return true;
+                    }
+                    final String message = getRestArgs(args, 2);
+                    if (message.equalsIgnoreCase("none")) {
+                        plugin.getBoostManager().startBoost(startBoost, sender instanceof Player ? (Player) sender : null, false);
+                        return true;
+                    }
+                    plugin.getBoostManager().startBoost(startBoost, sender instanceof Player ? (Player) sender : null, true, message);
                     return true;
                 }
                 final Boost startBoost;
@@ -560,8 +582,30 @@ public class CommandHandler implements CommandExecutor {
                     sender.sendMessage(INVALID_NAME);
                     return true;
                 }
-                plugin.getBoostManager().startBoost(startBoost);
+                plugin.getBoostManager().startBoost(startBoost, sender instanceof Player ? (Player) sender : null);
                 sender.sendMessage(ChatColor.GREEN + "Successfully started the boost!");
+                return true;
+            case "debug":
+                if (!sender.hasPermission("continuityboost.debug")) {
+                    sender.sendMessage(NO_PERMISSION);
+                    return true;
+                }
+                if (args.length > 1) {
+                    sender.sendMessage(TOO_MANY_ARGS);
+                    return true;
+                }
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(MUST_BE_PLAYER);
+                    return true;
+                }
+                final Player debugPlayer = (Player) sender;
+                if (plugin.getDebuggedPlayers().contains(debugPlayer.getUniqueId())) {
+                    plugin.getDebuggedPlayers().remove(debugPlayer.getUniqueId());
+                    sender.sendMessage(ChatColor.GREEN + "Successfully disabled debug!");
+                    return true;
+                }
+                plugin.getDebuggedPlayers().add(debugPlayer.getUniqueId());
+                sender.sendMessage(ChatColor.GREEN + "Successfully enabled debug!");
                 return true;
             default:
                 sender.sendMessage(ChatColor.RED + "Invalid argument!");
@@ -632,7 +676,8 @@ public class CommandHandler implements CommandExecutor {
         //noinspection SpellCheckingInspection
         sendFormatted(sender, label, "giveitem <name> [player]", "Give the item to a player");
         sendFormatted(sender, label, "toggle [player]", "Toggle the boost for a player");
-        sendFormatted(sender, label, "start <name>", "Start a boost");
+        sendFormatted(sender, label, "start <name> [custom message|NONE]", "Start a boost");
+        sendFormatted(sender, label, "debug", "Show debug");
     }
 
     @Nullable
@@ -676,9 +721,9 @@ public class CommandHandler implements CommandExecutor {
             if (minutes < 1) {
                 return seconds + " second" + (seconds == 1 ? "" : "s");
             }
-            return minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
+            return minutes + " minute" + (minutes == 1 ? "" : "s") + " and " + seconds + " second" + (seconds == 1 ? "" : "s");
         }
-        return hours + " hour" + (hours == 1 ? "" : "s") + ", " + minutes + " minute" + (minutes == 1 ? "" : "s") + ", " + seconds + " second" + (seconds == 1 ? "" : "s");
+        return hours + " hour" + (hours == 1 ? "" : "s") + ", " + minutes + " minute" + (minutes == 1 ? "" : "s") + ", and " + seconds + " second" + (seconds == 1 ? "" : "s");
     }
 
     public void showInfo(CommandSender sender, Boost boost) {
