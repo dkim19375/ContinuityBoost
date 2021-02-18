@@ -3,7 +3,7 @@ package me.dkim19375.continuityboost.plugin.commands;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;

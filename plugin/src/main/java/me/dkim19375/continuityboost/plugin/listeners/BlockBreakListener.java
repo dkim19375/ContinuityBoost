@@ -1,6 +1,6 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.continuityboost.plugin.util.RandomTypeUtils;

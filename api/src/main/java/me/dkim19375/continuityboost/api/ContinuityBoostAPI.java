@@ -1,5 +1,6 @@
 package me.dkim19375.continuityboost.api;
 
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

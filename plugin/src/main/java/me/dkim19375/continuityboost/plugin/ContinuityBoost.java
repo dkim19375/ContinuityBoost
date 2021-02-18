@@ -1,7 +1,7 @@
 package me.dkim19375.continuityboost.plugin;
 
 import me.dkim19375.continuityboost.api.BoostAPIProvider;
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.plugin.api.BoostAPIImpl;
 import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.commands.TabCompletionHandler;
@@ -102,6 +102,7 @@ public class ContinuityBoost extends CoreJavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new EntityDeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             final Set<String> materials = new HashSet<>();
             for (Material material : Material.values()) {

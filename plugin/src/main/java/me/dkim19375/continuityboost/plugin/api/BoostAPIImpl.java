@@ -1,11 +1,12 @@
 package me.dkim19375.continuityboost.plugin.api;
 
-import me.dkim19375.continuityboost.api.BoostType;
-
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.api.Booster;
 import me.dkim19375.continuityboost.api.ContinuityBoostAPI;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
+import me.dkim19375.continuityboost.plugin.commands.CommandHandler;
 import me.dkim19375.continuityboost.plugin.util.Boost;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -47,16 +48,34 @@ public class BoostAPIImpl implements ContinuityBoostAPI {
 
     @Override
     public void togglePlayer(@NotNull final UUID player) {
-        plugin.getBoostManager().togglePlayer(player);
+        if (isToggled(player)) {
+            togglePlayerOff(player);
+            return;
+        }
+        togglePlayerOn(player);
     }
 
     @Override
     public void togglePlayerOn(@NotNull final UUID player) {
         plugin.getBoostManager().togglePlayerOn(player);
+        final Player p = Bukkit.getPlayer(player);
+        if (p != null) {
+            CommandHandler.giveBoostToggled(plugin, p);
+        }
     }
 
     @Override
     public void togglePlayerOff(@NotNull final UUID player) {
+        final Player p = Bukkit.getPlayer(player);
+        if (p == null) {
+            plugin.getBoostManager().togglePlayerOff(player);
+            return;
+        }
+        for (Boost toggleBoost : plugin.getBoostManager().getCurrentBoostsPerType(BoostType.EFFECT)) {
+            if (toggleBoost.getEffect() != null) {
+                p.removePotionEffect(toggleBoost.getEffect().getType());
+            }
+        }
         plugin.getBoostManager().togglePlayerOff(player);
     }
 

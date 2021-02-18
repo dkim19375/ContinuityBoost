@@ -1,6 +1,6 @@
 package me.dkim19375.continuityboost.plugin.listeners;
 
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;

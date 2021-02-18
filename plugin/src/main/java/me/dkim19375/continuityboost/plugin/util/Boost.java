@@ -1,6 +1,6 @@
 package me.dkim19375.continuityboost.plugin.util;
 
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.api.Booster;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;

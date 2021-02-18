@@ -1,6 +1,6 @@
 package me.dkim19375.continuityboost.plugin.commands;
 
-import me.dkim19375.continuityboost.api.BoostType;
+import me.dkim19375.continuityboost.api.enums.BoostType;
 import me.dkim19375.continuityboost.plugin.ContinuityBoost;
 import me.dkim19375.continuityboost.plugin.util.Boost;
 import me.dkim19375.dkim19375core.NumberUtils;
@@ -662,7 +662,7 @@ public class CommandHandler implements CommandExecutor {
     }
 
     private void showHelp(CommandSender sender, String label) {
-        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "ContinuityBoost Commands");
+        sender.sendMessage(ChatColor.GREEN + "" + ChatColor.BOLD + "ContinuityBoost v" + plugin.getDescription().getVersion() + "Commands");
         sendFormatted(sender, label, "help", "Show this help page. <param> = required, [param] = optional");
         sendFormatted(sender, label, "currentBoosts", "Show all boosts currently happening");
         sendFormatted(sender, label, "boosts", "Show all boosts saved in the file");

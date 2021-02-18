@@ -1,4 +1,4 @@
-package me.dkim19375.continuityboost.api;
+package me.dkim19375.continuityboost.api.enums;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
